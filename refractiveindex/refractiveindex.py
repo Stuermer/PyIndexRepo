@@ -10,10 +10,49 @@ from yaml.scanner import ScannerError
 from scipy.interpolate import interp1d
 import dispersion_formulas
 
+
+@dataclass
+class ThermalExpansionData:
+    temperature_range: tuple | list[tuple]
+    coefficient: float | list[float]
+
+    def __post_init__(self):
+        if isinstance(self.coefficient, float):
+            self.coefficient = [self.coefficient]
+        if isinstance(self.temperature_range, tuple):
+            self.temperature_range = [self.temperature_range]
+
+    def get_coefficients(self, temperature):
+        valid_temperature_indices = []
+        temp_range = []
+        for i, tr in enumerate(self.temperature_range):
+            if tr[0] <= temperature <= tr[1]:
+                valid_temperature_indices.append(i)
+                temp_range.append(tr[1] - tr[0])
+        sorted_range = [x for _, x in sorted(zip(temp_range, valid_temperature_indices))]
+
+
+@dataclass
+class MaterialSpecs:
+    n_is_absolute: bool | None = field(default=None)
+    wavelength_is_vacuum: bool | None = field(default=None)
+    temperature: float | None = field(default=None)
+    thermal_dispersion_formula: callable | None = field(default=None)
+    thermal_dispersions_coefficients: np.ndarray | list[float] | None = field(default=None)
+    nd: float | None = field(default=None)
+    Vd: float | None = field(default=None)
+    glass_code: int | None = field(default=None)
+    glass_status: str | None = field(default=None)
+    density: float | None = field(default=None)
+    dPgF: float | None = field(default=None)
+    thermal_expansion: ThermalExpansionData | None = field(default=None)
+
+
 @dataclass
 class Material:
     n: TabulatedIndexData | FormulaIndexData | None = field(default=None)
     k: TabulatedIndexData | FormulaIndexData | None = field(default=None)
+    specs: MaterialSpecs | None = field(default=None)
 
     def get_n(self, wavelength):
         if self.n is None:
@@ -29,6 +68,14 @@ class Material:
 
     def get_nk(self, wavelength):
         return self.get_n(wavelength), self.get_k(wavelength)
+
+    def get_n_at_temperature(self, wavelength, temperature):
+        assert self.specs.thermal_dispersion_formula is not None, 'There is no thermal dispersion formula available ' \
+                                                                  'for this material'
+        assert self.specs.thermal_dispersions_coefficients is not None, 'There is no thermal dispersion formula ' \
+                                                                        'available for this material'
+        return self.specs.thermal_dispersion_formula(self.get_n(wavelength), self.specs.temperature, temperature,
+                                                     self.specs.thermal_dispersions_coefficients)
 
 
 @dataclass
@@ -46,6 +93,7 @@ class TabulatedIndexData:
     def get_n_or_k(self, wavelength):
         return self.ip(wavelength)
 
+
 @dataclass
 class FormulaIndexData:
     formula: callable
@@ -55,6 +103,7 @@ class FormulaIndexData:
 
     def get_n_or_k(self, wavelength):
         return self.formula(wavelength, self.coefficients)
+
 
 @dataclass
 class YAMLRefractiveIndexData:
@@ -165,11 +214,13 @@ class RefractiveIndexLibrary:
         if exact_match:
             for m in self.materials:
                 if term == m.name:
-                    materials.append(yaml_to_material(self.path_to_library.parent.joinpath('data').joinpath(m.lib_data)))
+                    materials.append(
+                        yaml_to_material(self.path_to_library.parent.joinpath('data').joinpath(m.lib_data)))
         else:
             for m in self.materials:
                 if term in m.name:
-                    materials.append(yaml_to_material(self.path_to_library.parent.joinpath('data').joinpath(m.lib_data)))
+                    materials.append(
+                        yaml_to_material(self.path_to_library.parent.joinpath('data').joinpath(m.lib_data)))
         return materials[0] if len(materials) == 1 else materials if len(materials) > 1 else None
 
     def get_material(self, shelf, book, page) -> Material | list[Material] | None:
@@ -219,19 +270,44 @@ def yaml_to_material(filepath: str | Path) -> Material:
         n_class = k_class = None
         try:
             d = yaml.safe_load(f)
+
+            # fill core data from yaml file
             wl_n, wl_min_n, wl_max_n, n, k, coefficients, formula = fill_variables_from_data_dict(d["DATA"][0])
             if formula:
-                n_class = FormulaIndexData(getattr(dispersion_formulas, f'formula_{formula}'), coefficients, wl_min_n, wl_max_n)
+                n_class = FormulaIndexData(getattr(dispersion_formulas, f'formula_{formula}'), coefficients, wl_min_n,
+                                           wl_max_n)
             elif n is not None:
                 n_class = TabulatedIndexData(wl_n, n, True, True)
 
             wl_k, wl_min_k, wl_max_k, _, k, coefficients_k, formula_k = fill_variables_from_data_dict(
                 next(iter(d["DATA"][1:2]), {"type": ""}))
             if formula_k:
-                k_class = FormulaIndexData(getattr(dispersion_formulas, f'formula_{formula}'), coefficients_k, wl_min_k, wl_max_k)
+                k_class = FormulaIndexData(getattr(dispersion_formulas, f'formula_{formula}'), coefficients_k, wl_min_k,
+                                           wl_max_k)
             elif k is not None:
                 k_class = TabulatedIndexData(wl_k, k, True, True)
 
+            # fill additional spec data if present
+            specs = d.get('SPECS', None)
+            if specs is not None:
+                if specs.get('thermal_dispersion', None) is not None:
+                    # TODO: what if there are more than one formula given?
+                    thermal_dispersion_formula = specs['thermal_dispersion'][0].get('type', None)
+                    thermal_dispersion_coefficients = specs['thermal_dispersion'][0].get('coefficients', None)
+                    if thermal_dispersion_formula is not None:
+                        if thermal_dispersion_formula == 'Schott formula':
+                            thermal_dispersion_formula = getattr(dispersion_formulas, 'delta_n_absolute')
+                        else:
+                            raise NotImplementedError(
+                                f'Thermal dispersion formula {thermal_dispersion_formula} is not implemented.')
+                    if thermal_dispersion_coefficients is not None:
+                        thermal_dispersion_coefficients = np.array(
+                            [float(c) for c in thermal_dispersion_coefficients.split()])
+
+                specs = MaterialSpecs(specs.get('n_is_absolute', None), specs.get('wavelength_is_vacuum', None),
+                                      specs.get('temperature', None), thermal_dispersion_formula,
+                                      thermal_dispersion_coefficients)
+                print(specs)
         except ScannerError:
             print(f"data in {filepath} can not be read")
         except ValueError:

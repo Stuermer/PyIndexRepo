@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import logging
 import pickle
+import time
 import warnings
 import zipfile
 from collections import namedtuple
@@ -15,6 +17,9 @@ from scipy.interpolate import interp1d
 from yaml.scanner import ScannerError
 
 from refractiveindex import dispersion_formulas
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("RefractiveIndex")
 
 TemperatureRange = namedtuple("TemperatureRange", ["min", "max"])
 
@@ -67,7 +72,9 @@ class Specs:
                     coefficients=np.array(
                         [float(val) for val in td_dict["coefficients"].split()],
                         dtype=float,
-                    ),
+                    )
+                    if td_dict.get("coefficients")
+                    else None,
                 )
                 thermal_dispersion_list.append(td)
         if len(thermal_dispersion_list) > 1:
@@ -79,9 +86,16 @@ class Specs:
         temperature_range_list = []
         if "thermal_expansion" in specs_dict:
             for tr_dict in specs_dict["thermal_expansion"]:
-                tr = TemperatureRange(
-                    tr_dict["temperature_range"][0], tr_dict["temperature_range"][1]
-                )
+                if isinstance(tr_dict, dict):
+                    if tr_dict.get("temperature_range"):
+                        tr = TemperatureRange(
+                            tr_dict["temperature_range"][0],
+                            tr_dict["temperature_range"][1],
+                        )
+                    else:
+                        tr = None
+                else:
+                    tr = None
                 temperature_range_list.append(tr)
         temperature = specs_dict.get("temperature")
         if temperature is not None:
@@ -98,15 +112,22 @@ class Specs:
             Vd=specs_dict.get("Vd"),
             glass_code=specs_dict.get("glass_code"),
             glass_status=specs_dict.get("glass_status"),
-            density=float(specs_dict.get("density").replace(" g/cm<sup>3</sup>", "")),
+            density=float(specs_dict.get("density").replace(" g/cm<sup>3</sup>", ""))
+            if specs_dict.get("density")
+            else None,
             thermal_expansion=[
                 ThermalExpansion(
-                    temperature_range=tr, coefficient=te_dict["coefficient"]
+                    temperature_range=tr,
+                    coefficient=te_dict["coefficient"]
+                    if isinstance(te_dict, dict)
+                    else None,
                 )
                 for tr, te_dict in zip(
                     temperature_range_list, specs_dict["thermal_expansion"]
                 )
-            ],
+            ]
+            if specs_dict.get("thermal_expansion")
+            else None,
             climatic_resistance=specs_dict.get("climatic_resistance"),
             stain_resistance=specs_dict.get("stain_resistance"),
             acid_resistance=specs_dict.get("acid_resistance"),
@@ -152,6 +173,7 @@ class Material:
     n: TabulatedIndexData | FormulaIndexData | None = field(default=None)
     k: TabulatedIndexData | FormulaIndexData | None = field(default=None)
     specs: Specs | None = field(default=None)
+    yaml_data: YAMLLibraryData = field(default=None)
 
     def get_n(self, wavelength):
         if self.n is None:
@@ -213,7 +235,11 @@ class TabulatedIndexData:
 
     def __post_init__(self):
         if self.use_interpolation:
-            self.ip = interp1d(self.wl, self.n_or_k, bounds_error=self.bounds_error)
+            self.ip = interp1d(
+                np.atleast_1d(self.wl),
+                np.atleast_1d(self.n_or_k),
+                bounds_error=self.bounds_error,
+            )
 
     def get_n_or_k(self, wavelength):
         return self.ip(wavelength)
@@ -253,9 +279,15 @@ class YAMLLibraryData:
     lib_shelf: str = field(default="")
     lib_book: str = field(default="")
     lib_page: str = field(default="")
+    lib_path: Path = field(default="")
 
     def __str__(self):
-        return f"{self.lib_shelf:10}, {self.lib_book:15}, {self.lib_page}, {self.name}, {self.lib_data}"
+        return (f"{self.lib_shelf:10}, "
+                f"{self.lib_book:15}, "
+                f"{self.lib_page}, "
+                f"{self.name}, "
+                f"{self.lib_data}, "
+                f"{self.lib_path}")
 
 
 @dataclass
@@ -266,29 +298,39 @@ class RefractiveIndexLibrary:
         .parent.parent.joinpath("database/catalog-nk.yml")
     )
     auto_upgrade: bool = field(default=True)
-    materials: list[YAMLLibraryData] = field(default_factory=list, init=False)
+    force_upgrade: bool = field(default=False)
+    materials_yaml: list[YAMLLibraryData] = field(default_factory=list, init=False)
+    materials: dict[str, dict[str, dict[str, Material]]] = field(
+        default_factory=dict, init=False
+    )
+    materials_list: list[Material] = field(default_factory=list, init=False)
     github_sha: str = field(default="", init=False)
 
-    def __str__(self):
-        for m in self.materials:
-            print(m)
-
     def _is_library_outdated(self) -> bool:
+        """ Checks if local library is outdated
+        """
         if self.path_to_library.parent.joinpath(".local_sha").exists():
             # get local commit hash
             with open(self.path_to_library.parent.joinpath(".local_sha"), "r") as file:
                 local_sha = file.readline()
             # get current commit hash on GitHub
-            self.github_sha = requests.get(
-                "https://api.github.com/repos/polyanskiy/refractiveindex.info-database/commits/master"
-            ).json()["sha"]
+            try:
+                self.github_sha = requests.get(
+                    "https://api.github.com/repos/polyanskiy/refractiveindex.info-database/commits/master"
+                ).json()["sha"]
+            except KeyError:
+                logger.warning("Couldn't get SHA commit hash on GitHub. Database can not be updated.")
+                self.github_sha = ""
+                return False
             return not (self.github_sha == local_sha)
         else:
+            logger.info("No local library exists.")
             return True
 
     def _download_latest_commit(self) -> bool:
-        if self._is_library_outdated():
-            print("Download new library version...")
+        """ Download latest library from GitHub."""
+        if self._is_library_outdated() or self.force_upgrade:
+            logger.info("New Library available... Downloading...")
             zip_url = f"https://api.github.com/repos/polyanskiy/refractiveindex.info-database/zipball"
             response = requests.get(zip_url)
 
@@ -321,7 +363,7 @@ class RefractiveIndexLibrary:
             return False
 
     def _load_from_yaml(self):
-        print("load from yaml")
+        logger.info("load from yaml")
         with open(self.path_to_library) as f:
             d = yaml.safe_load(f)
 
@@ -330,29 +372,114 @@ class RefractiveIndexLibrary:
                 if "BOOK" in book:
                     for page in book["content"]:
                         if "PAGE" in page:
-                            self.materials.append(
+                            # fill yaml list
+                            self.materials_yaml.append(
                                 YAMLLibraryData(
                                     name=page["name"],
                                     lib_page=page["PAGE"],
                                     lib_book=book["BOOK"],
                                     lib_shelf=s["SHELF"],
                                     lib_data=page["data"],
+                                    lib_path=self.path_to_library.parent.joinpath(
+                                        "data-nk"
+                                    ).joinpath(page["data"]),
                                 )
                             )
+                            print(
+                                s["SHELF"],
+                                book["BOOK"],
+                                page["PAGE"],
+                                self.path_to_library.parent.joinpath(
+                                    "data-nk"
+                                ).joinpath(page["data"]),
+                            )
+                            # fill materials dict
+                            if s["SHELF"] in self.materials:
+                                if book["BOOK"] in self.materials[s["SHELF"]]:
+                                    self.materials[s["SHELF"]][book["BOOK"]].update(
+                                        {
+                                            page["PAGE"]: yaml_to_material(
+                                                self.path_to_library.parent.joinpath(
+                                                    "data-nk"
+                                                ).joinpath(page["data"]),
+                                                s["SHELF"],
+                                                book["BOOK"],
+                                                page["PAGE"],
+                                                page["name"],
+                                            )
+                                        }
+                                    )
+                                else:
+                                    self.materials[s["SHELF"]][book["BOOK"]] = {
+                                        page["PAGE"]: yaml_to_material(
+                                            self.path_to_library.parent.joinpath(
+                                                "data-nk"
+                                            ).joinpath(page["data"]),
+                                            s["SHELF"],
+                                            book["BOOK"],
+                                            page["PAGE"],
+                                            page["name"],
+                                        )
+                                    }
+                            else:
+                                self.materials[s["SHELF"]] = {
+                                    book["BOOK"]: {
+                                        page["PAGE"]: yaml_to_material(
+                                            self.path_to_library.parent.joinpath(
+                                                "data-nk"
+                                            ).joinpath(page["data"]),
+                                            s["SHELF"],
+                                            book["BOOK"],
+                                            page["PAGE"],
+                                            page["name"],
+                                        )
+                                    }
+                                }
+
+                            self.materials_list.append(self.materials[s["SHELF"]][book["BOOK"]][page["PAGE"]])
+
+                            # self.materials.update(
+                            #     {
+                            #         s["SHELF"]: {
+                            #             book["BOOK"]: {
+                            #                 page["PAGE"]: yaml_to_material(
+                            #                     self.path_to_library.parent.joinpath(
+                            #                         "data-nk"
+                            #                     ).joinpath(page["data"]),
+                            #                     s["SHELF"],
+                            #                     book["BOOK"],
+                            #                     page["PAGE"],
+                            #                     page["name"],
+                            #                 )
+                            #             }
+                            #         }
+                            #     }
+                            # )
         with open(self.path_to_library.with_suffix(".pickle"), "wb") as f:
+            pickle.dump(self.materials_yaml, f, pickle.HIGHEST_PROTOCOL)
+        with open(self.path_to_library.with_suffix(".pickle2"), "wb") as f:
             pickle.dump(self.materials, f, pickle.HIGHEST_PROTOCOL)
 
     def _load_from_pickle(self):
-        print("load from pickle")
+        logger.info("load from pickle")
+        t1 = time.time()
         with open(self.path_to_library.with_suffix(".pickle"), "rb") as f:
+            self.materials_yaml = pickle.load(f)
+        with open(self.path_to_library.with_suffix(".pickle2"), "rb") as f:
             self.materials = pickle.load(f)
+
+        for sd in self.materials.values():
+            for bd in sd.values():
+                for mat in bd.values():
+                    self.materials_list.append(mat)
+        logger.info(f"... done after{t1-time.time()}s")
 
     def __post_init__(self):
         upgraded = False
         # create database folder if it doesn't exist
         if not self.path_to_library.parent.is_dir():
             self.path_to_library.parent.mkdir()
-        if self.auto_upgrade:
+        if self.auto_upgrade or self.force_upgrade:
             upgraded = self._download_latest_commit()
         if self.path_to_library.exists():
             if self.path_to_library.with_suffix(".pickle").exists() and not upgraded:
@@ -364,28 +491,37 @@ class RefractiveIndexLibrary:
                 "Path to library does not exist! Please check path or activate auto_upgrade to download."
             )
 
-    def search_pages(self, term, exact_match=False) -> Material | list[Material] | None:
+    def search_material_by_page_name(
+        self, page_name: str, exact_match: bool = False
+    ) -> Material | list[Material] | None:
+        """Search Material by name
+
+        Search a Material by page name as given at refractiveindex.info.
+        Sometimes, the name is not unique, so the function returns either a single Material or a list of Materials
+        or None if it doesn't find a match.
+
+        Args:
+            page_name:
+            exact_match:
+
+        Returns:
+            Material or list of Materials matching the Name
+
+        Examples:
+            >>> db = RefractiveIndexLibrary()
+            >>> bk7 = db.search_material_by_page_name('N-BK7')[0]  # returns a list of different BK7 glasses
+            >>> print(bk7.get_n(0.5875618))
+            1.5168000345005885
+        """
         materials = []
         if exact_match:
-            for m in self.materials:
-                if term == m.name:
-                    materials.append(
-                        yaml_to_material(
-                            self.path_to_library.parent.joinpath("data-nk").joinpath(
-                                m.lib_data
-                            )
-                        )
-                    )
+            for m in self.materials_list:
+                if page_name == m.yaml_data.name:
+                    materials.append(m)
         else:
-            for m in self.materials:
-                if term in m.name:
-                    materials.append(
-                        yaml_to_material(
-                            self.path_to_library.parent.joinpath("data-nk").joinpath(
-                                m.lib_data
-                            )
-                        )
-                    )
+            for m in self.materials_list:
+                if page_name in m.yaml_data.name:
+                    materials.append(m)
         return (
             materials[0]
             if len(materials) == 1
@@ -394,58 +530,103 @@ class RefractiveIndexLibrary:
             else None
         )
 
-    def get_material(self, shelf, book, page) -> Material | list[Material] | None:
+    def search_material_by_n(
+        self, n, wl: float = 0.5875618, shelf: str | None = None
+    ) -> list[Material]:
         materials = []
-        for m in self.materials:
-            if page == m.lib_page:
-                if book == m.lib_book:
-                    if shelf == m.lib_shelf:
-                        materials.append(
-                            yaml_to_material(
-                                self.path_to_library.parent.joinpath(
-                                    "data-nk"
-                                ).joinpath(m.lib_data)
-                            )
-                        )
-        return (
-            materials[0]
-            if len(materials) == 1
-            else materials
-            if len(materials) > 1
-            else None
-        )
+        materials_n_distance = []
+        for shelf_m, d in self.materials.items():
+            if shelf is not None:
+                if not shelf_m == shelf:
+                    continue
+                for dd in d.values():
+                    for mat in dd.values():
+                        materials.append(mat)
+                        try:
+                            materials_n_distance.append(abs(mat.get_n(wl) - n))
+                        except ValueError:
+                            materials_n_distance.append(99)
+
+        return [
+            x
+            for _, x in sorted(
+                zip(materials_n_distance, materials), key=lambda pair: pair[0]
+            )
+        ]
+
+    def get_material(
+        self, shelf: str, book: str, page: str
+    ) -> Material:
+        """Get Material by shelf, book, page name
+
+        Select Material by specifying shelf, book and page as given on refractiveindex.info
+
+        Args:
+            shelf: shelf name
+            book: book name
+            page: page name
+
+        Returns:
+            Material object
+
+        Examples:
+            >>> db = RefractiveIndexLibrary()
+            >>> bk7 = db.get_material("glass", "SCHOTT-BK", "N-BK7")
+            >>> print(bk7.get_n(0.5875618))
+            1.5168000345005885
+        """
+        return self.materials[shelf][book][page]
 
 
-def yaml_to_material(filepath: str | Path) -> Material:
+def yaml_to_material(
+    filepath: str | Path, lib_shelf: str, lib_book: str, lib_page: str, lib_name: str
+) -> Material:
+    """Converts RefractiveIndex.info YAML to Material
+
+    Reads a yaml file of the refractiveindex database and converts it to a Material object.
+
+    Args:
+        filepath: path to yaml file
+        lib_shelf: RefractiveIndex.info shelf name
+        lib_book: RefractiveIndex.info book name
+        lib_page: RefractiveIndex.info page name
+        lib_name: RefractiveIndex.info material name
+
+    Returns:
+        Material object
+    """
     if isinstance(filepath, str):
         filepath = Path(filepath)
 
     def fill_variables_from_data_dict(data):
+        """Helper function to split data in yaml into Material attributes"""
         data_type = data["type"]
         _wl_min = _wl_max = _wl = _n = _k = _coefficients = _formula = None
         if data_type == "tabulated nk":
             _wl, _n, _k = np.loadtxt(data["data"].split("\n")).T
             _wl_min = np.min(_wl)
             _wl_max = np.max(_wl)
-        if data_type == "tabulated n":
+        elif data_type == "tabulated n":
             (
                 _wl,
                 _n,
             ) = np.loadtxt(data["data"].split("\n")).T
             _wl_min = np.min(_wl)
             _wl_max = np.max(_wl)
-        if data_type == "tabulated k":
+        elif data_type == "tabulated k":
             (
                 _wl,
                 _k,
             ) = np.loadtxt(data["data"].split("\n")).T
             _wl_min = np.min(_wl)
             _wl_max = np.max(_wl)
-        if "formula" in data_type:
+        elif "formula" in data_type:
             _wl_range = data.get("wavelength_range") or data.get("range")
             _wl_min, _wl_max = _wl_range if _wl_range is not None else None, None
             _coefficients = np.array([float(c) for c in data["coefficients"].split()])
             _formula = data["type"].split()[1]
+        # else:
+        #     logger.warning(f"Could not convert YAML data for datatype {data_type}")
         return _wl, _wl_min, _wl_max, _n, _k, _coefficients, _formula
 
     with open(filepath) as f:
@@ -501,7 +682,14 @@ def yaml_to_material(filepath: str | Path) -> Material:
         except ValueError:
             print(f"data in {filepath} can not be read due to bad data")
 
-    return Material(n_class, k_class, specs)
+    return Material(
+        n_class,
+        k_class,
+        specs,
+        YAMLLibraryData(
+            lib_name, yaml.dump(d), lib_shelf, lib_book, lib_page, filepath
+        ),
+    )
 
 
 def fit_tabulated(
@@ -516,29 +704,14 @@ def fit_tabulated(
     return FormulaIndexData(formula, res.x)
 
 
+#
 if __name__ == "__main__":
-    import time
-
-    t1 = time.time()
-    db = RefractiveIndexLibrary(auto_upgrade=True)
-    # bacd16 = db.search_pages('K7', True)
-    bacd16 = db.get_material("glass", "SCHOTT-BK", "N-BK7")
-    print(dispersion_formulas.absolute_to_relative(1, 0.5875618))
-    wl = 0.5875618
-    print(wl * dispersion_formulas.absolute_to_relative(1.0, wl))
-    # print(bacd16)
-    # print(bacd16.n.coefficients)
-    print(bacd16.get_n(0.5875618))
-    print(bacd16.get_n_at_temperature(0.55, 30, 0.20266))
-    #
-    # print(dispersion_formulas.relative_to_absolute(bacd16.get_n(0.5875618), 0.5875618, 50))
-    # print(dispersion_formulas.relative_to_absolute(bacd16.get_n_at_temperature(0.5875618, 50), 0.5875618, 50))
-
-    # Ag = db.get_material('glass', 'HOYA-BaCD', 'BACD16')
-    # n = Ag.get_n(np.linspace(0.4, 0.9, 1000))
-    # print(n)
-    # t2 = time.time()
-    # k = Ag.get_k(np.linspace(0.399, 0.9, 1000))
-    # t3 = time.time()
-    # print(t2 - t1)
-    # print(t3-t2)
+    db = RefractiveIndexLibrary()
+    for shelf, m in db.materials.items():
+        for book, mm in m.items():
+            for page, mmm in mm.items():
+                try:
+                    if "formula_1" in str(mmm.get_n):
+                        print(mmm.get_n)
+                except AttributeError:
+                    pass

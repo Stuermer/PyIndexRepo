@@ -9,6 +9,7 @@ from numba import njit, config
 if "pytest" in sys.modules:
     config.DISABLE_JIT = True  # disable njit so numba function get covered by coverage
 
+
 @njit(
     [float64(float64, float64, float64), float64[:](float64[:], float64, float64)],
     cache=True,
@@ -230,7 +231,17 @@ def formula_9(wavelength, coefficients):
 
 
 @njit(cache=True)
-def dn_absolute_temperature(n_abs_ref, wl, dT, D0, D1, D2, E0, E1, w_tk):
+def dn_absolute_temperature(
+    n_abs_ref: float | np.ndarray,
+    wl: float | np.ndarray,
+    dT: float,
+    D0: float,
+    D1: float,
+    D2: float,
+    E0: float,
+    E1: float,
+    w_tk: float,
+):
     """dn/dT of absolute refractive index at certain Temperature
 
     Returns the temperature coefficient of the absolute refractive index for given wavelength and temperature
@@ -263,7 +274,17 @@ def dn_absolute_temperature(n_abs_ref, wl, dT, D0, D1, D2, E0, E1, w_tk):
 
 
 @njit(cache=True)
-def delta_absolute_temperature(n_abs_ref, wl, dT, D0, D1, D2, E0, E1, w_tk):
+def delta_absolute_temperature(
+    n_abs_ref: float | np.ndarray,
+    wl: float | np.ndarray,
+    dT: float,
+    D0: float,
+    D1: float,
+    D2: float,
+    E0: float,
+    E1: float,
+    w_tk: float,
+):
     """deltaT of absolute refractive index at certain Temperature
 
     Returns the temperature coefficient of the absolute refractive index for given wavelength and temperature
@@ -339,7 +360,12 @@ def dn_dt_air(wl: float | np.ndarray, T: float, P: float):
 
 
 @njit(cache=True)
-def absolute_to_relative(n_abs, wl, T=20.0, P=0.10133):
+def absolute_to_relative(
+    n_abs: float | np.ndarray,
+    wl: float | np.ndarray,
+    T: float = 20.0,
+    P: float = 0.10133,
+):
     """Converts absolute refractive index to relative
 
     Formula (5) of TIE-19
@@ -357,7 +383,12 @@ def absolute_to_relative(n_abs, wl, T=20.0, P=0.10133):
 
 
 @njit(cache=True)
-def relative_to_absolute(n_rel, wl, T=20.0, P=0.10133):
+def relative_to_absolute(
+    n_rel: float | np.ndarray,
+    wl: float | np.ndarray,
+    T: float = 20.0,
+    P: float = 0.10133,
+):
     """Converts relative refractive index to absolute
 
     Reverse of Formula (5) of TIE-19

@@ -23,13 +23,8 @@ pytest = "^7.3.1"
 coverage = "^7.2.3"
 pytest-cov = "^4.1.0"
 
-#[tool.coverage.paths]
-#source = ["refractiveindex"]
-#
-#[tool.coverage.run]
-#branch = true
-#source = ["refractiveindex"]
-#
+mkdocs = "^1.5.2"
+mkdocstrings = { extras = ["python"], version = "^0.22.0" }
 [tool.coverage.report]
 show_missing = true
 

@@ -26,6 +26,21 @@ TemperatureRange = namedtuple("TemperatureRange", ["min", "max"])
 
 @dataclass
 class ThermalDispersion:
+    """Thermal Dispersion
+    
+    Deals with thermal dispersion of material. For a given formula_type and coefficients, delta_n_abs points to a
+    function that is called with the arguments (n_ref, wavelength, coefficients*), where n_ref is the
+    refractive index at reference temperature, wavelength the wavelength(s) value(s) and coefficients the array of the
+    thermal dispersion coefficients.
+    For speed reasons, the function delta_n_abs is outsourced to the dispersion_formulas.py file and speed up by numba.
+    
+    Attributes:
+        formula_type: name of the formula. Supported are 'Schott formula'
+        coefficients: array with thermal dispersion coefficients (lengths depends on formula type)
+        delta_n_abs: function called with the arguments (n_ref, wavelength, coefficients*)
+    
+    """
+
     formula_type: str | None = None
     coefficients: np.ndarray | None = None
     delta_n_abs: callable = field(init=False)
@@ -35,10 +50,19 @@ class ThermalDispersion:
             self.delta_n_abs = getattr(
                 dispersion_formulas, "delta_absolute_temperature"
             )
+        else:
+            logger.warning("Thermal Dispersion formula not implemented yet")
 
 
 @dataclass
 class ThermalExpansion:
+    """Thermal expansion
+    Deals with thermal expansion of the material.
+    Attributes:
+        temperature_range: temperature range where thermal expansion coefficient is considered valid
+        coefficient: thermal expansion coefficient [1/K]
+    """
+
     temperature_range: TemperatureRange
     coefficient: float
 
@@ -224,6 +248,12 @@ class Material:
                 n_abs, rel_wavelength, temperature, P
             )
 
+    def __str__(self):
+        return self.yaml_data.name
+
+    def __repr__(self):
+        return self.yaml_data.name
+
 
 @dataclass
 class TabulatedIndexData:
@@ -253,7 +283,12 @@ class FormulaIndexData:
     max_wl: float = field(default=np.inf)
 
     def get_n_or_k(self, wavelength):
-        return self.formula(wavelength, self.coefficients)
+        if isinstance(wavelength, float) or isinstance(wavelength, np.ndarray):
+            return self.formula(wavelength, self.coefficients)
+        elif isinstance(wavelength, list):
+            return self.formula(np.array(wavelength), self.coefficients)
+        else:
+            raise ValueError(f"The datatype {type(wavelength)} is not supported.")
 
 
 @dataclass
@@ -282,12 +317,14 @@ class YAMLLibraryData:
     lib_path: Path = field(default="")
 
     def __str__(self):
-        return (f"{self.lib_shelf:10}, "
-                f"{self.lib_book:15}, "
-                f"{self.lib_page}, "
-                f"{self.name}, "
-                f"{self.lib_data}, "
-                f"{self.lib_path}")
+        return (
+            f"{self.lib_shelf:10}, "
+            f"{self.lib_book:15}, "
+            f"{self.lib_page}, "
+            f"{self.name}, "
+            f"{self.lib_data}, "
+            f"{self.lib_path}"
+        )
 
 
 @dataclass
@@ -297,7 +334,7 @@ class RefractiveIndexLibrary:
         .absolute()
         .parent.parent.joinpath("database/catalog-nk.yml")
     )
-    auto_upgrade: bool = field(default=True)
+    auto_upgrade: bool = field(default=False)
     force_upgrade: bool = field(default=False)
     materials_yaml: list[YAMLLibraryData] = field(default_factory=list, init=False)
     materials: dict[str, dict[str, dict[str, Material]]] = field(
@@ -307,8 +344,7 @@ class RefractiveIndexLibrary:
     github_sha: str = field(default="", init=False)
 
     def _is_library_outdated(self) -> bool:
-        """ Checks if local library is outdated
-        """
+        """Checks if local library is outdated"""
         if self.path_to_library.parent.joinpath(".local_sha").exists():
             # get local commit hash
             with open(self.path_to_library.parent.joinpath(".local_sha"), "r") as file:
@@ -319,7 +355,9 @@ class RefractiveIndexLibrary:
                     "https://api.github.com/repos/polyanskiy/refractiveindex.info-database/commits/master"
                 ).json()["sha"]
             except KeyError:
-                logger.warning("Couldn't get SHA commit hash on GitHub. Database can not be updated.")
+                logger.warning(
+                    "Couldn't get SHA commit hash on GitHub. Database can not be updated."
+                )
                 self.github_sha = ""
                 return False
             return not (self.github_sha == local_sha)
@@ -328,7 +366,7 @@ class RefractiveIndexLibrary:
             return True
 
     def _download_latest_commit(self) -> bool:
-        """ Download latest library from GitHub."""
+        """Download latest library from GitHub."""
         if self._is_library_outdated() or self.force_upgrade:
             logger.info("New Library available... Downloading...")
             zip_url = f"https://api.github.com/repos/polyanskiy/refractiveindex.info-database/zipball"
@@ -365,9 +403,9 @@ class RefractiveIndexLibrary:
     def _load_from_yaml(self):
         logger.info("load from yaml")
         with open(self.path_to_library) as f:
-            d = yaml.safe_load(f)
+            yaml_data = yaml.safe_load(f)
 
-        for s in d:
+        for s in yaml_data:
             for book in s["content"]:
                 if "BOOK" in book:
                     for page in book["content"]:
@@ -436,25 +474,10 @@ class RefractiveIndexLibrary:
                                     }
                                 }
 
-                            self.materials_list.append(self.materials[s["SHELF"]][book["BOOK"]][page["PAGE"]])
+                            self.materials_list.append(
+                                self.materials[s["SHELF"]][book["BOOK"]][page["PAGE"]]
+                            )
 
-                            # self.materials.update(
-                            #     {
-                            #         s["SHELF"]: {
-                            #             book["BOOK"]: {
-                            #                 page["PAGE"]: yaml_to_material(
-                            #                     self.path_to_library.parent.joinpath(
-                            #                         "data-nk"
-                            #                     ).joinpath(page["data"]),
-                            #                     s["SHELF"],
-                            #                     book["BOOK"],
-                            #                     page["PAGE"],
-                            #                     page["name"],
-                            #                 )
-                            #             }
-                            #         }
-                            #     }
-                            # )
         with open(self.path_to_library.with_suffix(".pickle"), "wb") as f:
             pickle.dump(self.materials_yaml, f, pickle.HIGHEST_PROTOCOL)
         with open(self.path_to_library.with_suffix(".pickle2"), "wb") as f:
@@ -531,21 +554,54 @@ class RefractiveIndexLibrary:
         )
 
     def search_material_by_n(
-        self, n, wl: float = 0.5875618, shelf: str | None = None
+        self,
+        n: float,
+        wl: float = 0.5875618,
+        filter_shelf: str | None = None,
+        filter_book: str | None = None,
     ) -> list[Material]:
+        """Search Material by refractive index
+
+        Look for a material with a specific refractive index at a certain wavelength.
+        In return, you get a sorted list of materials with index [0] being the closest to input n.
+
+        Args:
+            n: refractive index
+            wl: wavelength
+            filter_shelf: if given, only materials containing this string in their shelf name are considered
+            filter_book: if given, only materials containing this string in their book name are considered
+
+        Examples:
+            >>> db = RefractiveIndexLibrary()
+            >>> # get 3 closest OHARA glasses with n=1.5 at 0.55microns:
+            >>> materials = db.search_material_by_n(1.5, wl=0.55, filter_book="ohara")[:3]
+            >>> print(materials[0].yaml_data.name, materials[0].get_n(0.55))
+            BSL3 1.4999474387027893
+            >>> print(materials[1].yaml_data.name, materials[1].get_n(0.55))
+            S-FPL51Y 1.498313496038896
+            >>> print(materials[2].yaml_data.name, materials[2].get_n(0.55))
+            S-FPL51 1.498303051383454
+
+        Returns:
+            sorted list of materials matching search criteria
+
+        """
         materials = []
         materials_n_distance = []
         for shelf_m, d in self.materials.items():
-            if shelf is not None:
-                if not shelf_m == shelf:
+            if not (shelf_m == filter_shelf or filter_shelf is None):
+                continue
+            for book_name, book_m in d.items():
+                if not (
+                    filter_book.lower() in book_name.lower() or filter_book is None
+                ):
                     continue
-                for dd in d.values():
-                    for mat in dd.values():
-                        materials.append(mat)
-                        try:
-                            materials_n_distance.append(abs(mat.get_n(wl) - n))
-                        except ValueError:
-                            materials_n_distance.append(99)
+                for mat in book_m.values():
+                    materials.append(mat)
+                    try:
+                        materials_n_distance.append(abs(mat.get_n(wl) - n))
+                    except ValueError:
+                        materials_n_distance.append(99)
 
         return [
             x
@@ -554,9 +610,7 @@ class RefractiveIndexLibrary:
             )
         ]
 
-    def get_material(
-        self, shelf: str, book: str, page: str
-    ) -> Material:
+    def get_material(self, shelf: str, book: str, page: str) -> Material:
         """Get Material by shelf, book, page name
 
         Select Material by specifying shelf, book and page as given on refractiveindex.info
@@ -704,14 +758,18 @@ def fit_tabulated(
     return FormulaIndexData(formula, res.x)
 
 
-#
 if __name__ == "__main__":
     db = RefractiveIndexLibrary()
-    for shelf, m in db.materials.items():
-        for book, mm in m.items():
-            for page, mmm in mm.items():
-                try:
-                    if "formula_1" in str(mmm.get_n):
-                        print(mmm.get_n)
-                except AttributeError:
-                    pass
+    # for shelf, m in db.materials.items():
+    #     for book, mm in m.items():
+    #         for page, mmm in mm.items():
+    #             try:
+    #                 if "formula_1" in str(mmm.get_n):
+    #                     print(mmm.get_n)
+    #             except AttributeError:
+    #                 pass
+    materials = db.search_material_by_n(1.5, wl=0.55, filter_book="ohara")[:5]
+    for m in materials:
+        print(m.yaml_data.name, m.get_n(0.55))
+    # print(materials)
+    # print(materials[0].get_n(0.55))

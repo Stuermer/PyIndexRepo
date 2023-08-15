@@ -91,3 +91,18 @@ def test_n_at_temperature(db):
         1.5103242657
     )  # value from ZEMAX
     assert bk7.get_n(0.55) == pytest.approx(bk7.get_n_at_temperature(0.55, 20))
+
+
+def test_different_datatypes(db):
+    bk7 = db.get_material("glass", "SCHOTT-BK", "N-BK7")
+    res = bk7.get_k(0.5)
+    assert (
+        isinstance(res, float)
+        or isinstance(res, np.float64)
+        or isinstance(res, np.float_)
+        or isinstance(res, np.ndarray)
+    )  # res can be a np.ndarray, because scipy.interpolate returns a np.ndarray
+
+    assert isinstance(bk7.get_k([0.5, 0.6, 0.7]), np.ndarray)
+
+    assert isinstance(bk7.get_k(np.linspace(0.5, 0.6, 100)), np.ndarray)

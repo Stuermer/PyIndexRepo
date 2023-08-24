@@ -27,18 +27,18 @@ TemperatureRange = namedtuple("TemperatureRange", ["min", "max"])
 @dataclass
 class ThermalDispersion:
     """Thermal Dispersion
-    
+
     Deals with thermal dispersion of material. For a given formula_type and coefficients, delta_n_abs points to a
     function that is called with the arguments (n_ref, wavelength, coefficients*), where n_ref is the
     refractive index at reference temperature, wavelength the wavelength(s) value(s) and coefficients the array of the
     thermal dispersion coefficients.
     For speed reasons, the function delta_n_abs is outsourced to the dispersion_formulas.py file and speed up by numba.
-    
+
     Attributes:
         formula_type: name of the formula. Supported are 'Schott formula'
         coefficients: array with thermal dispersion coefficients (lengths depends on formula type)
         delta_n_abs: function called with the arguments (n_ref, wavelength, coefficients*)
-    
+
     """
 
     formula_type: str | None = None
@@ -69,6 +69,31 @@ class ThermalExpansion:
 
 @dataclass
 class Specs:
+    """
+    A dataclass representing material specifications.
+
+    Attributes:
+        n_is_absolute (bool, optional): Indicates whether the refractive index is given in absolute units.
+            True if it is, False if not, and None if unspecified.
+        wavelength_is_vacuum (bool, optional): Specifies whether the wavelength is given in vacuum.
+            True if it is, False if not, and None if unspecified.
+        temperature (float, optional): The temperature of the material in degrees Celsius. None if unspecified.
+        thermal_dispersion (ThermalDispersion, optional): An instance of the ThermalDispersion class representing thermal dispersion information.
+            None if unspecified.
+        nd (float, optional): The refractive index (n) of the material. None if unspecified.
+        Vd (float, optional): The Abbe number (Vd) of the material. None if unspecified.
+        glass_code (float, optional): The glass code associated with the material. None if unspecified.
+        glass_status (str, optional): The status or classification of the glass material as a string. None if unspecified.
+        density (float, optional): The density of the material. None if unspecified.
+        thermal_expansion (List[ThermalExpansion], optional): A list of instances of the ThermalExpansion class representing thermal expansion properties.
+            None if unspecified.
+        climatic_resistance (float, optional): The material's resistance to climatic conditions. None if unspecified.
+        stain_resistance (float, optional): The material's resistance to staining. None if unspecified.
+        acid_resistance (float, optional): The material's resistance to acids. None if unspecified.
+        alkali_resistance (float, optional): The material's resistance to alkalis. None if unspecified.
+        phosphate_resistance (float, optional): The material's resistance to phosphates. None if unspecified.
+    """
+
     n_is_absolute: bool | None = None
     wavelength_is_vacuum: bool | None = None
     temperature: float | None = None
@@ -194,6 +219,20 @@ class Specs:
 
 @dataclass
 class Material:
+    """
+    A dataclass representing a material's properties.
+
+    Attributes:
+        n (TabulatedIndexData | FormulaIndexData | None, optional): The refractive index (n) data for the material.
+            It can be an instance of TabulatedIndexData or FormulaIndexData, or None if unspecified.
+        k (TabulatedIndexData | FormulaIndexData | None, optional): The extinction coefficient (k) data for the material.
+            It can be an instance of TabulatedIndexData or FormulaIndexData, or None if unspecified.
+        specs (Specs | None, optional): An instance of the Specs dataclass representing material specifications.
+            None if unspecified.
+        yaml_data (YAMLLibraryData, optional): An instance of the YAMLLibraryData class representing YAML library data.
+            None if unspecified.
+    """
+
     n: TabulatedIndexData | FormulaIndexData | None = field(default=None)
     k: TabulatedIndexData | FormulaIndexData | None = field(default=None)
     specs: Specs | None = field(default=None)
@@ -257,6 +296,19 @@ class Material:
 
 @dataclass
 class TabulatedIndexData:
+    """
+    A dataclass representing tabulated index data.
+
+    Attributes:
+        wl (np.ndarray | list[float]): An array or list containing wavelength values (in nm).
+        n_or_k (np.ndarray | list[float]): An array or list containing refractive index (n) or extinction coefficient (k) values.
+        ip (callable, read-only): A callable property to perform interpolation on the data.
+        use_interpolation (bool, optional): Indicates whether to use interpolation when querying values.
+            True to use interpolation, False to disable interpolation. Default is True.
+        bounds_error (bool, optional): Indicates whether to raise an error for out-of-bounds queries.
+            True to raise an error, False to suppress errors. Default is True.
+    """
+
     wl: np.ndarray | list[float]
     n_or_k: np.ndarray | list[float]
     ip: callable = field(init=False)
@@ -277,6 +329,16 @@ class TabulatedIndexData:
 
 @dataclass
 class FormulaIndexData:
+    """
+    A dataclass representing formula-based index data.
+
+    Attributes:
+        formula (callable): A callable function that computes the refractive index (n) or extinction coefficient (k) for a given wavelength.
+        coefficients (np.array): An array of coefficients required by the formula function.
+        min_wl (float, optional): The minimum wavelength (in nm) for which the formula is valid. Default is negative infinity.
+        max_wl (float, optional): The maximum wavelength (in nm) for which the formula is valid. Default is positive infinity.
+    """
+
     formula: callable
     coefficients: np.array
     min_wl: float = field(default=-np.inf)
@@ -293,6 +355,19 @@ class FormulaIndexData:
 
 @dataclass
 class YAMLRefractiveIndexData:
+    """
+    A dataclass representing refractive index data in YAML format.
+
+    Attributes:
+        data_type (str): The type of refractive index data, such as 'tabulated', 'formula', etc.
+        wavelength_range (str, optional): The range of wavelengths for which the data is valid.
+            Default is an empty string, indicating unspecified range.
+        coefficients (str, optional): A string containing coefficients or formula details for formula-based data.
+            Default is an empty string, indicating unspecified coefficients.
+        data (str, optional): A string containing the actual data in YAML format.
+            Default is an empty string, indicating unspecified data.
+    """
+
     data_type: str
     wavelength_range: str = field(default="")
     coefficients: str = field(default="")
@@ -301,6 +376,18 @@ class YAMLRefractiveIndexData:
 
 @dataclass
 class YAMLMaterialData:
+    """
+    A dataclass representing material data in YAML format.
+
+    Attributes:
+        n_data (YAMLRefractiveIndexData): An instance of YAMLRefractiveIndexData containing refractive index (n) data.
+        k_data (YAMLRefractiveIndexData): An instance of YAMLRefractiveIndexData containing extinction coefficient (k) data.
+        comments (str, optional): Additional comments or notes related to the material data.
+            Default is an empty string, indicating no comments.
+        references (str, optional): References or sources of information for the material data.
+            Default is an empty string, indicating no references.
+    """
+
     n_data: YAMLRefractiveIndexData
     k_data: YAMLRefractiveIndexData
     comments: str = field(default="")
@@ -329,6 +416,22 @@ class YAMLLibraryData:
 
 @dataclass
 class RefractiveIndexLibrary:
+    """
+    The dataclass representing the refractive index library using data from RefractiveIndex.info.
+
+    Attributes:
+        path_to_library (Path, optional): The path to the refractive index library YAML file.
+            Default is a path pointing to a default library file.
+        auto_upgrade (bool, optional): Automatically upgrade the library when initialized if set to True.
+            Default is False.
+        force_upgrade (bool, optional): Forcefully upgrade the library even if not necessary if set to True.
+            Default is False.
+        materials_yaml (List[YAMLLibraryData], read-only): A list of YAML library data instances representing materials.
+        materials_dict (Dict[str, Dict[str, Dict[str, Material]]], read-only): A dictionary of materials organized by catalog, category, and name.
+        materials_list (List[Material], read-only): A list of all materials contained in the library.
+        github_sha (str, read-only): The GitHub SHA corresponding to the version of the library data.
+    """
+
     path_to_library: Path = field(
         default=Path(__file__)
         .absolute()
@@ -337,7 +440,7 @@ class RefractiveIndexLibrary:
     auto_upgrade: bool = field(default=False)
     force_upgrade: bool = field(default=False)
     materials_yaml: list[YAMLLibraryData] = field(default_factory=list, init=False)
-    materials: dict[str, dict[str, dict[str, Material]]] = field(
+    materials_dict: dict[str, dict[str, dict[str, Material]]] = field(
         default_factory=dict, init=False
     )
     materials_list: list[Material] = field(default_factory=list, init=False)
@@ -423,65 +526,60 @@ class RefractiveIndexLibrary:
                                     ).joinpath(page["data"]),
                                 )
                             )
-                            print(
-                                s["SHELF"],
-                                book["BOOK"],
-                                page["PAGE"],
+
+    def _convert_to_material_dict(self):
+        for m in self.materials_yaml:
+            # fill materials dict
+            if m.lib_shelf in self.materials_dict:
+                if m.lib_book in self.materials_dict[m.lib_shelf]:
+                    self.materials_dict[m.lib_shelf][m.lib_book].update(
+                        {
+                            m.lib_page: yaml_to_material(
                                 self.path_to_library.parent.joinpath(
                                     "data-nk"
-                                ).joinpath(page["data"]),
+                                ).joinpath(m.lib_data),
+                                m.lib_shelf,
+                                m.lib_book,
+                                m.lib_page,
+                                m.name,
                             )
-                            # fill materials dict
-                            if s["SHELF"] in self.materials:
-                                if book["BOOK"] in self.materials[s["SHELF"]]:
-                                    self.materials[s["SHELF"]][book["BOOK"]].update(
-                                        {
-                                            page["PAGE"]: yaml_to_material(
-                                                self.path_to_library.parent.joinpath(
-                                                    "data-nk"
-                                                ).joinpath(page["data"]),
-                                                s["SHELF"],
-                                                book["BOOK"],
-                                                page["PAGE"],
-                                                page["name"],
-                                            )
-                                        }
-                                    )
-                                else:
-                                    self.materials[s["SHELF"]][book["BOOK"]] = {
-                                        page["PAGE"]: yaml_to_material(
-                                            self.path_to_library.parent.joinpath(
-                                                "data-nk"
-                                            ).joinpath(page["data"]),
-                                            s["SHELF"],
-                                            book["BOOK"],
-                                            page["PAGE"],
-                                            page["name"],
-                                        )
-                                    }
-                            else:
-                                self.materials[s["SHELF"]] = {
-                                    book["BOOK"]: {
-                                        page["PAGE"]: yaml_to_material(
-                                            self.path_to_library.parent.joinpath(
-                                                "data-nk"
-                                            ).joinpath(page["data"]),
-                                            s["SHELF"],
-                                            book["BOOK"],
-                                            page["PAGE"],
-                                            page["name"],
-                                        )
-                                    }
-                                }
+                        }
+                    )
+                else:
+                    self.materials_dict[m.lib_shelf][m.lib_book] = {
+                        m.lib_page: yaml_to_material(
+                            self.path_to_library.parent.joinpath("data-nk").joinpath(
+                                m.lib_data
+                            ),
+                            m.lib_shelf,
+                            m.lib_book,
+                            m.lib_page,
+                            m.name,
+                        )
+                    }
+            else:
+                self.materials_dict[m.lib_shelf] = {
+                    m.lib_book: {
+                        m.lib_page: yaml_to_material(
+                            self.path_to_library.parent.joinpath("data-nk").joinpath(
+                                m.lib_data
+                            ),
+                            m.lib_shelf,
+                            m.lib_book,
+                            m.lib_page,
+                            m.name,
+                        )
+                    }
+                }
 
-                            self.materials_list.append(
-                                self.materials[s["SHELF"]][book["BOOK"]][page["PAGE"]]
-                            )
+            self.materials_list.append(
+                self.materials_dict[m.lib_shelf][m.lib_book][m.lib_page]
+            )
 
         with open(self.path_to_library.with_suffix(".pickle"), "wb") as f:
             pickle.dump(self.materials_yaml, f, pickle.HIGHEST_PROTOCOL)
         with open(self.path_to_library.with_suffix(".pickle2"), "wb") as f:
-            pickle.dump(self.materials, f, pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.materials_dict, f, pickle.HIGHEST_PROTOCOL)
 
     def _load_from_pickle(self):
         logger.info("load from pickle")
@@ -489,9 +587,9 @@ class RefractiveIndexLibrary:
         with open(self.path_to_library.with_suffix(".pickle"), "rb") as f:
             self.materials_yaml = pickle.load(f)
         with open(self.path_to_library.with_suffix(".pickle2"), "rb") as f:
-            self.materials = pickle.load(f)
+            self.materials_dict = pickle.load(f)
 
-        for sd in self.materials.values():
+        for sd in self.materials_dict.values():
             for bd in sd.values():
                 for mat in bd.values():
                     self.materials_list.append(mat)
@@ -509,6 +607,7 @@ class RefractiveIndexLibrary:
                 self._load_from_pickle()
             else:
                 self._load_from_yaml()
+                self._convert_to_material_dict()
         else:
             warnings.warn(
                 "Path to library does not exist! Please check path or activate auto_upgrade to download."
@@ -588,14 +687,14 @@ class RefractiveIndexLibrary:
         """
         materials = []
         materials_n_distance = []
-        for shelf_m, d in self.materials.items():
+        for shelf_m, d in self.materials_dict.items():
             if not (shelf_m == filter_shelf or filter_shelf is None):
                 continue
             for book_name, book_m in d.items():
-                if not (
-                    filter_book.lower() in book_name.lower() or filter_book is None
-                ):
-                    continue
+                if filter_book is not None:
+                    if not (filter_book.lower() in book_name.lower()):
+                        continue
+
                 for mat in book_m.values():
                     materials.append(mat)
                     try:
@@ -629,7 +728,23 @@ class RefractiveIndexLibrary:
             >>> print(bk7.get_n(0.5875618))
             1.5168000345005885
         """
-        return self.materials[shelf][book][page]
+        return self.materials_dict[shelf][book][page]
+
+    def get_material_by_path(self, yaml_pah: str) -> Material:
+        """Get material by path
+
+        Args:
+            yaml_pah: path as shown on refractive index when hovered over 'CSV - comma separated data'
+
+        Returns:
+            Material object
+        """
+        mat_found = [
+            m
+            for m in self.materials_list
+            if str(m.yaml_data.lib_path).lower().endswith(yaml_pah.lower() + ".yml")
+        ]
+        return mat_found[0] if mat_found else None
 
 
 def yaml_to_material(

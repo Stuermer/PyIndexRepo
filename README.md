@@ -1,11 +1,11 @@
-# Fast Refractive Index
+# PyIndexRepo
 
 This package gives access to the refractive index data from [RefractiveIndex.info]().
 
-The focus of this package is to provide a convenient interface to the refractive index data, and be
-efficient in the calculation.
+The focus of this package is to provide a convenient interface to the data, and be
+efficient in the calculation of (temperature-dependent) refractive indices.
 
-## How to use it
+## Usage
 
 #### Basics
 
@@ -46,3 +46,8 @@ print(bk7.get_n_at_temperature(wl, temperature=30))
 [1.53088657 1.53088257 1.53087857 ... 1.51309187 1.51309107 1.51309027]
 ```
 
+## Installation
+
+```bash
+pip install rie
+```

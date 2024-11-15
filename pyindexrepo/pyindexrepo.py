@@ -529,7 +529,7 @@ class RefractiveIndexLibrary:
                 ]
                 subfolder_files.append(f"{file_list[0]}database/catalog-nk.yml")
                 for fn in subfolder_files:
-                    print(fn)
+                    logger.debug(fn)
                     # create a new Path object for the file to extract
                     extract_path = self.path_to_library.parent / Path(
                         "/".join(Path(fn).parts[2:])
@@ -885,7 +885,7 @@ def yaml_to_material(
             # fill additional spec data if present
             specs = d.get("SPECS", None)
             if specs is not None:
-                print(specs)
+                logger.debug(specs)
                 specs = Specs.read_specs_from_yaml(specs)
         except ScannerError:
             print(f"data in {filepath} can not be read")

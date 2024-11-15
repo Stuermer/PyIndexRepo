@@ -1,6 +1,6 @@
 import numpy as np
 
-from refractiveindex.fri import Material, TabulatedIndexData
+from pyindexrepo.pyindexrepo import Material, TabulatedIndexData
 
 
 def test_tabulated_n_material():
@@ -35,4 +35,3 @@ def test_missing_data():
     n, k = m.get_nk([0.3, 0.5, 0.7])
     assert np.array_equal(n, array_zero)
     assert np.array_equal(k, array_zero)
-

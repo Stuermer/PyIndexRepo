@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from refractiveindex.dispersion_formulas import n_air
-from refractiveindex.fri import RefractiveIndexLibrary
+from pyindexrepo.dispersion_formulas import n_air
+from pyindexrepo.pyindexrepo import RefractiveIndexLibrary
 
 
 @pytest.fixture(scope="session")

@@ -403,3 +403,26 @@ def relative_to_absolute(
 
     """
     return n_rel * n_air(wl, T, P)
+
+
+@njit(cache=True)
+def n_absolute_with_given_dndt(
+        n_rel: float | np.ndarray,
+        wl: float | np.ndarray,
+        dT: float,
+        coefficient: float
+):
+    """Calculates absolute refractive index with given dn/dT
+
+    Formula (6) of TIE-19
+
+    Args:
+        n_rel: relative refractive index
+        wl: wavelength [micron]
+        dT: temperature difference [°Celsius]
+        coefficient: dn/dT
+
+    Returns:
+
+    """
+    return n_rel + coefficient * dT

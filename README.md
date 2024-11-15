@@ -10,7 +10,7 @@ efficient in the calculation of (temperature-dependent) refractive indices.
 #### Basics
 
 ```python
-from refractiveindex.fri import RefractiveIndexLibrary
+from pyindexrepo.pyindexrepo import RefractiveIndexLibrary
 
 db = RefractiveIndexLibrary(auto_upgrade=True)
 bk7 = db.search_material_by_page_name('N-BK7')[0]  # returns a list of different BK7 glasses
@@ -20,7 +20,7 @@ print(bk7.get_n(0.5875618))
 When executed for the first time, the database from the
 RefractiveIndex [Github Repo](https://github.com/polyanskiy/refractiveindex.info-database) will be downloaded and
 converted to a python object. This process takes a few minutes. Consecutive calls will load the database object
-from a local file (almost immediately).
+from a local file (almost instantaneously).
 
 Auto-upgrade of the library is supported, but switched off by default.
 
@@ -34,7 +34,7 @@ within the valid temperature range:
 
 ```python
 import numpy as np
-from refractiveindex.fri import RefractiveIndexLibrary
+from pyindexrepo.pyindexrepo import RefractiveIndexLibrary
 
 db = RefractiveIndexLibrary(auto_upgrade=True)
 bk7 = db.search_material_by_page_name('N-BK7')[0]  # returns a list of different BK7 glasses
@@ -49,5 +49,5 @@ print(bk7.get_n_at_temperature(wl, temperature=30))
 ## Installation
 
 ```bash
-pip install rie
+pip install pyindexrepo
 ```

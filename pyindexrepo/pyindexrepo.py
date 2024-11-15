@@ -7,6 +7,7 @@ import warnings
 import zipfile
 from collections import namedtuple
 from dataclasses import dataclass, field
+from logging import warning
 from pathlib import Path
 from typing import List
 
@@ -16,7 +17,7 @@ import yaml
 from scipy.interpolate import interp1d
 from yaml.scanner import ScannerError
 
-from refractiveindex import dispersion_formulas
+from pyindexrepo import dispersion_formulas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("RefractiveIndex")
@@ -42,7 +43,7 @@ class ThermalDispersion:
     """
 
     formula_type: str | None = None
-    coefficients: np.ndarray | None = None
+    coefficients: np.ndarray | float | None = None
     delta_n_abs: callable = field(init=False)
 
     def __post_init__(self):
@@ -50,6 +51,8 @@ class ThermalDispersion:
             self.delta_n_abs = getattr(
                 dispersion_formulas, "delta_absolute_temperature"
             )
+        elif self.formula_type == "dn/dT":
+            self.delta_n_abs = getattr(dispersion_formulas, "n_absolute_with_given_dndt")
         else:
             logger.warning("Thermal Dispersion formula not implemented yet")
 
@@ -116,15 +119,24 @@ class Specs:
         thermal_dispersion_list = []
         if "thermal_dispersion" in specs_dict:
             for td_dict in specs_dict["thermal_dispersion"]:
-                td = ThermalDispersion(
-                    formula_type=td_dict["type"],
-                    coefficients=np.array(
-                        [float(val) for val in td_dict["coefficients"].split()],
-                        dtype=float,
+                if td_dict.get("type") == "Schott formula":
+                    td = ThermalDispersion(
+                        formula_type=td_dict["type"],
+                        coefficients=np.array(
+                            [float(val) for val in td_dict["coefficients"].split()],
+                            dtype=float,
+                        )
+                        if td_dict.get("coefficients")
+                        else None,
                     )
-                    if td_dict.get("coefficients")
-                    else None,
-                )
+                elif td_dict.get("type") == "dn/dT":
+                    td = ThermalDispersion(
+                        formula_type=td_dict["type"],
+                        coefficients=float(td_dict["value"].split()[0]),
+                    )
+                else:
+                    td = None
+                    warning(f"Thermal Dispersion formula {td_dict.get('type')} not implemented yet")
                 thermal_dispersion_list.append(td)
         if len(thermal_dispersion_list) > 1:
             warnings.warn(
@@ -148,7 +160,21 @@ class Specs:
                 temperature_range_list.append(tr)
         temperature = specs_dict.get("temperature")
         if temperature is not None:
-            temperature = float(temperature.split()[0])
+            if isinstance(temperature, str):
+                # if in Kelvin, convert to Celsius
+                if "K" in temperature:
+                    temperature = float(temperature.split()[0]) - 273.15
+                elif "C" in temperature:
+                    temperature = float(temperature.split()[0])
+                else:
+                    temperature = float(temperature.split()[0]) - 273.15
+                    warnings.warn('Temperature unit not recognized or given. Assuming Kelvin.')
+            elif isinstance(temperature, int):
+                temperature = float(temperature)
+            elif isinstance(temperature, float):
+                pass
+            else:
+                warnings.warn(f"Temperature is not a string or an integer/float. {temperature}")
         # Create Specs dataclass instance
         specs = Specs(
             n_is_absolute=specs_dict.get("n_is_absolute"),
@@ -167,7 +193,7 @@ class Specs:
             thermal_expansion=[
                 ThermalExpansion(
                     temperature_range=tr,
-                    coefficient=te_dict["coefficient"]
+                    coefficient=te_dict.get("coefficient") or te_dict.get("value")
                     if isinstance(te_dict, dict)
                     else None,
                 )
@@ -845,6 +871,7 @@ def yaml_to_material(
             # fill additional spec data if present
             specs = d.get("SPECS", None)
             if specs is not None:
+                print(specs)
                 specs = Specs.read_specs_from_yaml(specs)
         except ScannerError:
             print(f"data in {filepath} can not be read")

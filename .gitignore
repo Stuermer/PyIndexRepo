@@ -1,0 +1,4 @@
+database/*
+.coverage
+poetry.lock
+tests/coverage

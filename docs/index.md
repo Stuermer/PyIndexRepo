@@ -4,12 +4,12 @@ For full documentation visit ...
 
 # Reference
 
-::: refractiveindex.fri
+::: pyindexrepo.pyindexrepo
 options:
 show_source: true
 heading_level: 1
 
-::: refractiveindex.dispersion_formulas
+::: pyindexrepo.dispersion_formulas
 options:
 show_source: true
 heading_level: 1

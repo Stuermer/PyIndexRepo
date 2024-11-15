@@ -203,12 +203,7 @@ def formula_8(wavelength, coefficients):
         / (
             coefficients[2] * (coefficients[0] + coefficients[3] * wavelength**2 - 1)
             - wavelength**2
-            * (
-                coefficients[0]
-                + coefficients[1]
-                + coefficients[3] * wavelength**2
-                - 1
-            )
+            * (coefficients[0] + coefficients[1] + coefficients[3] * wavelength ** 2 - 1)
         )
     )
 
@@ -407,10 +402,7 @@ def relative_to_absolute(
 
 @njit(cache=True)
 def n_absolute_with_given_dndt(
-        n_rel: float | np.ndarray,
-        wl: float | np.ndarray,
-        dT: float,
-        coefficient: float
+        n_rel: float | np.ndarray, wl: float | np.ndarray, dT: float, coefficient: float
 ):
     """Calculates absolute refractive index with given dn/dT
 

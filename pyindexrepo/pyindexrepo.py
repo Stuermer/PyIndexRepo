@@ -52,7 +52,9 @@ class ThermalDispersion:
                 dispersion_formulas, "delta_absolute_temperature"
             )
         elif self.formula_type == "dn/dT":
-            self.delta_n_abs = getattr(dispersion_formulas, "n_absolute_with_given_dndt")
+            self.delta_n_abs = getattr(
+                dispersion_formulas, "n_absolute_with_given_dndt"
+            )
         else:
             logger.warning("Thermal Dispersion formula not implemented yet")
 
@@ -122,12 +124,14 @@ class Specs:
                 if td_dict.get("type") == "Schott formula":
                     td = ThermalDispersion(
                         formula_type=td_dict["type"],
-                        coefficients=np.array(
-                            [float(val) for val in td_dict["coefficients"].split()],
-                            dtype=float,
-                        )
-                        if td_dict.get("coefficients")
-                        else None,
+                        coefficients=(
+                            np.array(
+                                [float(val) for val in td_dict["coefficients"].split()],
+                                dtype=float,
+                            )
+                            if td_dict.get("coefficients")
+                            else None
+                        ),
                     )
                 elif td_dict.get("type") == "dn/dT":
                     td = ThermalDispersion(
@@ -136,7 +140,9 @@ class Specs:
                     )
                 else:
                     td = None
-                    warning(f"Thermal Dispersion formula {td_dict.get('type')} not implemented yet")
+                    warning(
+                        f"Thermal Dispersion formula {td_dict.get('type')} not implemented yet"
+                    )
                 thermal_dispersion_list.append(td)
         if len(thermal_dispersion_list) > 1:
             warnings.warn(
@@ -168,41 +174,51 @@ class Specs:
                     temperature = float(temperature.split()[0])
                 else:
                     temperature = float(temperature.split()[0]) - 273.15
-                    warnings.warn('Temperature unit not recognized or given. Assuming Kelvin.')
+                    warnings.warn(
+                        "Temperature unit not recognized or given. Assuming Kelvin."
+                    )
             elif isinstance(temperature, int):
                 temperature = float(temperature)
             elif isinstance(temperature, float):
                 pass
             else:
-                warnings.warn(f"Temperature is not a string or an integer/float. {temperature}")
+                warnings.warn(
+                    f"Temperature is not a string or an integer/float. {temperature}"
+                )
         # Create Specs dataclass instance
         specs = Specs(
             n_is_absolute=specs_dict.get("n_is_absolute"),
             wavelength_is_vacuum=specs_dict.get("wavelength_is_vacuum"),
             temperature=temperature,
-            thermal_dispersion=thermal_dispersion_list[0]
-            if thermal_dispersion_list
-            else None,
+            thermal_dispersion=(
+                thermal_dispersion_list[0] if thermal_dispersion_list else None
+            ),
             nd=specs_dict.get("nd"),
             Vd=specs_dict.get("Vd"),
             glass_code=specs_dict.get("glass_code"),
             glass_status=specs_dict.get("glass_status"),
-            density=float(specs_dict.get("density").replace(" g/cm<sup>3</sup>", ""))
-            if specs_dict.get("density")
-            else None,
-            thermal_expansion=[
-                ThermalExpansion(
-                    temperature_range=tr,
-                    coefficient=te_dict.get("coefficient") or te_dict.get("value")
-                    if isinstance(te_dict, dict)
-                    else None,
-                )
-                for tr, te_dict in zip(
+            density=(
+                float(specs_dict.get("density").replace(" g/cm<sup>3</sup>", ""))
+                if specs_dict.get("density")
+                else None
+            ),
+            thermal_expansion=(
+                [
+                    ThermalExpansion(
+                        temperature_range=tr,
+                        coefficient=(
+                            te_dict.get("coefficient") or te_dict.get("value")
+                            if isinstance(te_dict, dict)
+                            else None
+                        ),
+                    )
+                    for tr, te_dict in zip(
                     temperature_range_list, specs_dict["thermal_expansion"]
                 )
-            ]
-            if specs_dict.get("thermal_expansion")
-            else None,
+                ]
+                if specs_dict.get("thermal_expansion")
+                else None
+            ),
             climatic_resistance=specs_dict.get("climatic_resistance"),
             stain_resistance=specs_dict.get("stain_resistance"),
             acid_resistance=specs_dict.get("acid_resistance"),
@@ -498,7 +514,7 @@ class RefractiveIndexLibrary:
         """Download latest library from GitHub."""
         if self._is_library_outdated() or self.force_upgrade:
             logger.info("New Library available... Downloading...")
-            zip_url = f"https://api.github.com/repos/polyanskiy/refractiveindex.info-database/zipball"
+            zip_url = "https://api.github.com/repos/polyanskiy/refractiveindex.info-database/zipball"
             response = requests.get(zip_url)
 
             with open(self.path_to_library.with_suffix(".zip"), "wb") as file:
@@ -673,9 +689,7 @@ class RefractiveIndexLibrary:
         return (
             materials[0]
             if len(materials) == 1
-            else materials
-            if len(materials) > 1
-            else None
+            else materials if len(materials) > 1 else None
         )
 
     def search_material_by_n(
@@ -718,7 +732,7 @@ class RefractiveIndexLibrary:
                 continue
             for book_name, book_m in d.items():
                 if filter_book is not None:
-                    if not (filter_book.lower() in book_name.lower()):
+                    if filter_book.lower() not in book_name.lower():
                         continue
 
                 for mat in book_m.values():

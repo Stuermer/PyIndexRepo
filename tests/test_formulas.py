@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
+from pyindexrepo import RefractiveIndexLibrary
 from pyindexrepo.dispersion_formulas import n_air
-from pyindexrepo.pyindexrepo import RefractiveIndexLibrary
 
 
 @pytest.fixture(scope="session")
@@ -99,7 +99,7 @@ def test_different_datatypes(db):
     assert (
         isinstance(res, float)
         or isinstance(res, np.float64)
-        or isinstance(res, np.float_)
+        or isinstance(res, np.float32)
         or isinstance(res, np.ndarray)
     )  # res can be a np.ndarray, because scipy.interpolate returns a np.ndarray
 

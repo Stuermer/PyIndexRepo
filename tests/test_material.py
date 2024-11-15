@@ -1,6 +1,6 @@
 import numpy as np
 
-from pyindexrepo.pyindexrepo import Material, TabulatedIndexData
+from pyindexrepo import Material, TabulatedIndexData
 
 
 def test_tabulated_n_material():

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "PyIndexRepo"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python interface for data on refractiveindex.info"
 authors = ["stuermer <stuermer@lsw.uni-heidelberg.de>"]
 readme = "README.md"

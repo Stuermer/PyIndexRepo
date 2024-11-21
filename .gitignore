@@ -2,3 +2,6 @@ database/*
 .coverage
 poetry.lock
 tests/coverage
+.idea
+build/
+dist/

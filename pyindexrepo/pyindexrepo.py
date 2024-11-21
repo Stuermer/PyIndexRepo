@@ -282,13 +282,13 @@ class Material:
 
     def get_n(self, wavelength):
         if self.n is None:
-            print("WARNING: no n data, returning 0")
+            warnings.warn("No n data. Returning 0")
             return np.zeros_like(wavelength)
         return self.n.get_n_or_k(wavelength)
 
     def get_k(self, wavelength):
         if self.k is None:
-            print("WARNING: no k data, returning 0")
+            warnings.warn("No k data. Returning 0")
             return np.zeros_like(wavelength)
         return self.k.get_n_or_k(wavelength)
 
@@ -385,6 +385,9 @@ class FormulaIndexData:
     coefficients: np.array
     min_wl: float = field(default=-np.inf)
     max_wl: float = field(default=np.inf)
+
+    def __post_init__(self):
+        self.coefficients = np.array(self.coefficients, dtype=float)
 
     def get_n_or_k(self, wavelength):
         if isinstance(wavelength, float) or isinstance(wavelength, np.ndarray):

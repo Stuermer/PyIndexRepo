@@ -1,13 +1,25 @@
-site_name: Fast Refractive Index
-theme: readthedocs
+site_name: PyIndexRepo
 
 plugins:
   - search
+  - autorefs
   - mkdocstrings:
       enabled: !ENV [ ENABLE_MKDOCSTRINGS, true ]
-      custom_templates: templates
       default_handler: python
       handlers:
         python:
           options:
             show_source: true
+            show_inherited_members: true
+            group_by: "type"
+
+theme:
+  name: readthedocs
+  features:
+    - navigation.expand
+    - toc.integrate
+
+nav:
+  - Home: index.md
+  - API Reference:
+      - pyindexrepo: api_docs.md

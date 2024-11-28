@@ -1,15 +1,3 @@
-# Welcome to Fast Refractive Index
+# Welcome to PyIndexRepo
 
-For full documentation visit ...
-
-# Reference
-
-::: pyindexrepo.pyindexrepo
-options:
-show_source: true
-heading_level: 1
-
-::: pyindexrepo.dispersion_formulas
-options:
-show_source: true
-heading_level: 1
+This page provides the API reference for the PyIndexRepo package.

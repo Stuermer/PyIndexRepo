@@ -1,3 +1,7 @@
+![PyPI - Version](https://img.shields.io/pypi/v/PyIndexRepo)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/PyIndexRepo)
+
+
 # PyIndexRepo
 
 This package gives access to the refractive index data from [RefractiveIndex.info]().

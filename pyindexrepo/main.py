@@ -298,6 +298,7 @@ class Material:
     def get_n_at_temperature(
         self, wavelength: float | np.ndarray, temperature: float, P: float = 0.10133
     ) -> float | np.ndarray:
+        assert self.specs is not None, "There are no specs available for this material"
         assert self.specs.thermal_expansion is not None, (
             "There is no thermal dispersion formula available " "for this material"
         )
@@ -574,52 +575,14 @@ class RefractiveIndexLibrary:
 
     def _convert_to_material_dict(self):
         for m in self.materials_yaml:
-            # fill materials dict
-            if m.lib_shelf in self.materials_dict:
-                if m.lib_book in self.materials_dict[m.lib_shelf]:
-                    self.materials_dict[m.lib_shelf][m.lib_book].update(
-                        {
-                            m.lib_page: yaml_to_material(
-                                self.path_to_library.parent.joinpath(
-                                    "data-nk"
-                                ).joinpath(m.lib_data),
-                                m.lib_shelf,
-                                m.lib_book,
-                                m.lib_page,
-                                m.name,
-                            )
-                        }
-                    )
-                else:
-                    self.materials_dict[m.lib_shelf][m.lib_book] = {
-                        m.lib_page: yaml_to_material(
-                            self.path_to_library.parent.joinpath("data-nk").joinpath(
-                                m.lib_data
-                            ),
-                            m.lib_shelf,
-                            m.lib_book,
-                            m.lib_page,
-                            m.name,
-                        )
-                    }
-            else:
-                self.materials_dict[m.lib_shelf] = {
-                    m.lib_book: {
-                        m.lib_page: yaml_to_material(
-                            self.path_to_library.parent.joinpath("data-nk").joinpath(
-                                m.lib_data
-                            ),
-                            m.lib_shelf,
-                            m.lib_book,
-                            m.lib_page,
-                            m.name,
-                        )
-                    }
-                }
+            # try to load material from yaml
+            mat = yaml_to_material(self.path_to_library.parent.joinpath("data-nk").joinpath(m.lib_data), m.lib_shelf,
+                                   m.lib_book, m.lib_page, m.name)
+            if mat:
+                # add material to dict, use shelf, book and page as keys
+                self.materials_dict.setdefault(m.lib_shelf, {}).setdefault(m.lib_book, {}).update({m.lib_page: mat})
 
-            self.materials_list.append(
-                self.materials_dict[m.lib_shelf][m.lib_book][m.lib_page]
-            )
+                self.materials_list.append(self.materials_dict[m.lib_shelf][m.lib_book][m.lib_page])
 
         with open(self.path_to_library.with_suffix(".pickle"), "wb") as f:
             pickle.dump(self.materials_yaml, f, pickle.HIGHEST_PROTOCOL)
@@ -792,7 +755,7 @@ class RefractiveIndexLibrary:
 
 def yaml_to_material(
     filepath: str | Path, lib_shelf: str, lib_book: str, lib_page: str, lib_name: str
-) -> Material:
+) -> Material | None:
     """Converts RefractiveIndex.info YAML to Material
 
     Reads a yaml file of the refractiveindex database and converts it to a Material object.
@@ -891,9 +854,11 @@ def yaml_to_material(
                 logger.debug(specs)
                 specs = Specs.read_specs_from_yaml(specs)
         except ScannerError:
-            print(f"data in {filepath} can not be read")
+            logger.warning(f"Could not read data in {filepath}")
+            return None
         except ValueError:
-            print(f"data in {filepath} can not be read due to bad data")
+            logger.warning(f"Could not read data in {filepath} due to bad data")
+            return None
 
     return Material(
         n_class,

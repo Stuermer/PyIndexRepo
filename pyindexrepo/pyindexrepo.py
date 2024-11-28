@@ -773,11 +773,11 @@ class RefractiveIndexLibrary:
         """
         return self.materials_dict[shelf][book][page]
 
-    def get_material_by_path(self, yaml_pah: str) -> Material:
+    def get_material_by_path(self, yaml_path: str) -> Material:
         """Get material by path
 
         Args:
-            yaml_pah: path as shown on refractive index when hovered over 'CSV - comma separated data'
+            yaml_path: path as shown on refractive index when hovered over 'CSV - comma separated data'
 
         Returns:
             Material object
@@ -785,7 +785,7 @@ class RefractiveIndexLibrary:
         mat_found = [
             m
             for m in self.materials_list
-            if str(m.yaml_data.lib_path).lower().endswith(yaml_pah.lower() + ".yml")
+            if str(m.yaml_data.lib_path).lower().endswith(yaml_path.lower() + ".yml")
         ]
         return mat_found[0] if mat_found else None
 
@@ -915,20 +915,3 @@ def fit_tabulated(
 
     res = least_squares(fit_func, coefficients, args=(tid.wl, tid.n_or_k))
     return FormulaIndexData(formula, res.x)
-
-
-if __name__ == "__main__":
-    db = RefractiveIndexLibrary()
-    # for shelf, m in db.materials.items():
-    #     for book, mm in m.items():
-    #         for page, mmm in mm.items():
-    #             try:
-    #                 if "formula_1" in str(mmm.get_n):
-    #                     print(mmm.get_n)
-    #             except AttributeError:
-    #                 pass
-    materials = db.search_material_by_n(1.5, wl=0.55, filter_book="ohara")[:5]
-    for m in materials:
-        print(m.yaml_data.name, m.get_n(0.55))
-    # print(materials)
-    # print(materials[0].get_n(0.55))

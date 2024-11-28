@@ -79,7 +79,7 @@
 
 
 
-<a id="pyindexrepo.pyindexrepo"></a>
+<a id="pyindexrepo.main"></a>
     <div class="doc doc-contents first">
 
 
@@ -102,7 +102,7 @@
 
 
 
-<h2 id="pyindexrepo.pyindexrepo.FormulaIndexData" class="doc doc-heading">
+<h2 id="pyindexrepo.main.FormulaIndexData" class="doc doc-heading">
             <code>FormulaIndexData</code>
 
 
@@ -172,7 +172,7 @@
 
 
               <details class="quote">
-                <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+                <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
 class FormulaIndexData:
     """
@@ -226,7 +226,7 @@ class FormulaIndexData:
 
 
 
-<h2 id="pyindexrepo.pyindexrepo.Material" class="doc doc-heading">
+<h2 id="pyindexrepo.main.Material" class="doc doc-heading">
             <code>Material</code>
 
 
@@ -255,7 +255,7 @@ class FormulaIndexData:
         <ul class="first simple">
             <li>
               <b><code>n</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.TabulatedIndexData" href="#pyindexrepo.pyindexrepo.TabulatedIndexData">TabulatedIndexData</a> | <a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.FormulaIndexData" href="#pyindexrepo.pyindexrepo.FormulaIndexData">FormulaIndexData</a> | None</code>)
+                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.main.TabulatedIndexData" href="#pyindexrepo.main.TabulatedIndexData">TabulatedIndexData</a> | <a class="autorefs autorefs-internal" title="pyindexrepo.main.FormulaIndexData" href="#pyindexrepo.main.FormulaIndexData">FormulaIndexData</a> | None</code>)
               –
               <div class="doc-md-description">
                 <p>The refractive index (n) data for the material.
@@ -264,7 +264,7 @@ It can be an instance of TabulatedIndexData or FormulaIndexData, or None if unsp
             </li>
             <li>
               <b><code>k</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.TabulatedIndexData" href="#pyindexrepo.pyindexrepo.TabulatedIndexData">TabulatedIndexData</a> | <a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.FormulaIndexData" href="#pyindexrepo.pyindexrepo.FormulaIndexData">FormulaIndexData</a> | None</code>)
+                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.main.TabulatedIndexData" href="#pyindexrepo.main.TabulatedIndexData">TabulatedIndexData</a> | <a class="autorefs autorefs-internal" title="pyindexrepo.main.FormulaIndexData" href="#pyindexrepo.main.FormulaIndexData">FormulaIndexData</a> | None</code>)
               –
               <div class="doc-md-description">
                 <p>The extinction coefficient (k) data for the material.
@@ -273,7 +273,7 @@ It can be an instance of TabulatedIndexData or FormulaIndexData, or None if unsp
             </li>
             <li>
               <b><code>specs</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.Specs" href="#pyindexrepo.pyindexrepo.Specs">Specs</a> | None</code>)
+                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.main.Specs" href="#pyindexrepo.main.Specs">Specs</a> | None</code>)
               –
               <div class="doc-md-description">
                 <p>An instance of the Specs dataclass representing material specifications.
@@ -282,7 +282,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>yaml_data</code></b>
-                  (<code><span title="pyindexrepo.pyindexrepo.YAMLLibraryData">YAMLLibraryData</span></code>)
+                  (<code><span title="pyindexrepo.main.YAMLLibraryData">YAMLLibraryData</span></code>)
               –
               <div class="doc-md-description">
                 <p>An instance of the YAMLLibraryData class representing YAML library data.
@@ -300,7 +300,7 @@ None if unspecified.</p>
 
 
               <details class="quote">
-                <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+                <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
 class Material:
     """
@@ -340,6 +340,7 @@ class Material:
     def get_n_at_temperature(
         self, wavelength: float | np.ndarray, temperature: float, P: float = 0.10133
     ) -&gt; float | np.ndarray:
+        assert self.specs is not None, "There are no specs available for this material"
         assert self.specs.thermal_expansion is not None, (
             "There is no thermal dispersion formula available " "for this material"
         )
@@ -402,7 +403,7 @@ class Material:
 
 
 
-<h2 id="pyindexrepo.pyindexrepo.RefractiveIndexLibrary" class="doc doc-heading">
+<h2 id="pyindexrepo.main.RefractiveIndexLibrary" class="doc doc-heading">
             <code>RefractiveIndexLibrary</code>
 
 
@@ -458,7 +459,7 @@ Default is False.</p>
             </li>
             <li>
               <b><code>materials_yaml</code></b>
-                  (<code>(<span title="typing.List">List</span>[<span title="pyindexrepo.pyindexrepo.YAMLLibraryData">YAMLLibraryData</span>], read - only)</code>)
+                  (<code>(<span title="typing.List">List</span>[<span title="pyindexrepo.main.YAMLLibraryData">YAMLLibraryData</span>], read - only)</code>)
               –
               <div class="doc-md-description">
                 <p>A list of YAML library data instances representing materials.</p>
@@ -466,7 +467,7 @@ Default is False.</p>
             </li>
             <li>
               <b><code>materials_dict</code></b>
-                  (<code>(Dict[str, Dict[str, Dict[str, <a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.Material" href="#pyindexrepo.pyindexrepo.Material">Material</a>]]], read - only)</code>)
+                  (<code>(Dict[str, Dict[str, Dict[str, <a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a>]]], read - only)</code>)
               –
               <div class="doc-md-description">
                 <p>A dictionary of materials organized by catalog, category, and name.</p>
@@ -474,7 +475,7 @@ Default is False.</p>
             </li>
             <li>
               <b><code>materials_list</code></b>
-                  (<code>(<span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.Material" href="#pyindexrepo.pyindexrepo.Material">Material</a>], read - only)</code>)
+                  (<code>(<span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a>], read - only)</code>)
               –
               <div class="doc-md-description">
                 <p>A list of all materials contained in the library.</p>
@@ -499,7 +500,7 @@ Default is False.</p>
 
 
               <details class="quote">
-                <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+                <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
 class RefractiveIndexLibrary:
     """
@@ -615,52 +616,14 @@ class RefractiveIndexLibrary:
 
     def _convert_to_material_dict(self):
         for m in self.materials_yaml:
-            # fill materials dict
-            if m.lib_shelf in self.materials_dict:
-                if m.lib_book in self.materials_dict[m.lib_shelf]:
-                    self.materials_dict[m.lib_shelf][m.lib_book].update(
-                        {
-                            m.lib_page: yaml_to_material(
-                                self.path_to_library.parent.joinpath(
-                                    "data-nk"
-                                ).joinpath(m.lib_data),
-                                m.lib_shelf,
-                                m.lib_book,
-                                m.lib_page,
-                                m.name,
-                            )
-                        }
-                    )
-                else:
-                    self.materials_dict[m.lib_shelf][m.lib_book] = {
-                        m.lib_page: yaml_to_material(
-                            self.path_to_library.parent.joinpath("data-nk").joinpath(
-                                m.lib_data
-                            ),
-                            m.lib_shelf,
-                            m.lib_book,
-                            m.lib_page,
-                            m.name,
-                        )
-                    }
-            else:
-                self.materials_dict[m.lib_shelf] = {
-                    m.lib_book: {
-                        m.lib_page: yaml_to_material(
-                            self.path_to_library.parent.joinpath("data-nk").joinpath(
-                                m.lib_data
-                            ),
-                            m.lib_shelf,
-                            m.lib_book,
-                            m.lib_page,
-                            m.name,
-                        )
-                    }
-                }
+            # try to load material from yaml
+            mat = yaml_to_material(self.path_to_library.parent.joinpath("data-nk").joinpath(m.lib_data), m.lib_shelf,
+                                   m.lib_book, m.lib_page, m.name)
+            if mat:
+                # add material to dict, use shelf, book and page as keys
+                self.materials_dict.setdefault(m.lib_shelf, {}).setdefault(m.lib_book, {}).update({m.lib_page: mat})
 
-            self.materials_list.append(
-                self.materials_dict[m.lib_shelf][m.lib_book][m.lib_page]
-            )
+                self.materials_list.append(self.materials_dict[m.lib_shelf][m.lib_book][m.lib_page])
 
         with open(self.path_to_library.with_suffix(".pickle"), "wb") as f:
             pickle.dump(self.materials_yaml, f, pickle.HIGHEST_PROTOCOL)
@@ -846,7 +809,7 @@ class RefractiveIndexLibrary:
 <div class="doc doc-object doc-function">
 
 
-<h3 id="pyindexrepo.pyindexrepo.RefractiveIndexLibrary.get_material" class="doc doc-heading">
+<h3 id="pyindexrepo.main.RefractiveIndexLibrary.get_material" class="doc doc-heading">
             <code class="highlight language-python">get_material(shelf, book, page)</code>
 
 </h3>
@@ -909,7 +872,7 @@ class RefractiveIndexLibrary:
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.Material" href="#pyindexrepo.pyindexrepo.Material">Material</a></code>
+                  <code><a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a></code>
               –
               <div class="doc-md-description">
                 <p>Material object</p>
@@ -928,7 +891,7 @@ class RefractiveIndexLibrary:
 1.5168000345005885</code></pre>
 
             <details class="quote">
-              <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def get_material(self, shelf: str, book: str, page: str) -&gt; Material:
     """Get Material by shelf, book, page name
 
@@ -957,7 +920,7 @@ class RefractiveIndexLibrary:
 <div class="doc doc-object doc-function">
 
 
-<h3 id="pyindexrepo.pyindexrepo.RefractiveIndexLibrary.get_material_by_path" class="doc doc-heading">
+<h3 id="pyindexrepo.main.RefractiveIndexLibrary.get_material_by_path" class="doc doc-heading">
             <code class="highlight language-python">get_material_by_path(yaml_path)</code>
 
 </h3>
@@ -1003,7 +966,7 @@ class RefractiveIndexLibrary:
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.Material" href="#pyindexrepo.pyindexrepo.Material">Material</a></code>
+                  <code><a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a></code>
               –
               <div class="doc-md-description">
                 <p>Material object</p>
@@ -1015,7 +978,7 @@ class RefractiveIndexLibrary:
   </tbody>
 </table>
             <details class="quote">
-              <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def get_material_by_path(self, yaml_path: str) -&gt; Material:
     """Get material by path
 
@@ -1039,7 +1002,7 @@ class RefractiveIndexLibrary:
 <div class="doc doc-object doc-function">
 
 
-<h3 id="pyindexrepo.pyindexrepo.RefractiveIndexLibrary.search_material_by_n" class="doc doc-heading">
+<h3 id="pyindexrepo.main.RefractiveIndexLibrary.search_material_by_n" class="doc doc-heading">
             <code class="highlight language-python">search_material_by_n(n, wl=0.5875618, filter_shelf=None, filter_book=None)</code>
 
 </h3>
@@ -1129,7 +1092,7 @@ S-FPL51 1.498303051383454</code></pre>
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code>list[<a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.Material" href="#pyindexrepo.pyindexrepo.Material">Material</a>]</code>
+                  <code>list[<a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a>]</code>
               –
               <div class="doc-md-description">
                 <p>sorted list of materials matching search criteria</p>
@@ -1141,7 +1104,7 @@ S-FPL51 1.498303051383454</code></pre>
   </tbody>
 </table>
             <details class="quote">
-              <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def search_material_by_n(
     self,
     n: float,
@@ -1206,7 +1169,7 @@ S-FPL51 1.498303051383454</code></pre>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="pyindexrepo.pyindexrepo.RefractiveIndexLibrary.search_material_by_page_name" class="doc doc-heading">
+<h3 id="pyindexrepo.main.RefractiveIndexLibrary.search_material_by_page_name" class="doc doc-heading">
             <code class="highlight language-python">search_material_by_page_name(page_name, exact_match=False)</code>
 
 </h3>
@@ -1265,7 +1228,7 @@ or None if it doesn't find a match.</p>
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.Material" href="#pyindexrepo.pyindexrepo.Material">Material</a> | list[<a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.Material" href="#pyindexrepo.pyindexrepo.Material">Material</a>] | None</code>
+                  <code><a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a> | list[<a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a>] | None</code>
               –
               <div class="doc-md-description">
                 <p>Material or list of Materials matching the Name</p>
@@ -1284,7 +1247,7 @@ or None if it doesn't find a match.</p>
 1.5168000345005885</code></pre>
 
             <details class="quote">
-              <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def search_material_by_page_name(
     self, page_name: str, exact_match: bool = False
 ) -&gt; Material | list[Material] | None:
@@ -1338,7 +1301,7 @@ or None if it doesn't find a match.</p>
 
 
 
-<h2 id="pyindexrepo.pyindexrepo.Specs" class="doc doc-heading">
+<h2 id="pyindexrepo.main.Specs" class="doc doc-heading">
             <code>Specs</code>
 
 
@@ -1393,7 +1356,7 @@ True if it is, False if not, and None if unspecified.</p>
             </li>
             <li>
               <b><code>thermal_dispersion</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.ThermalDispersion" href="#pyindexrepo.pyindexrepo.ThermalDispersion">ThermalDispersion</a></code>)
+                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.main.ThermalDispersion" href="#pyindexrepo.main.ThermalDispersion">ThermalDispersion</a></code>)
               –
               <div class="doc-md-description">
                 <p>An instance of the ThermalDispersion class representing thermal dispersion information.
@@ -1442,7 +1405,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>thermal_expansion</code></b>
-                  (<code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.ThermalExpansion" href="#pyindexrepo.pyindexrepo.ThermalExpansion">ThermalExpansion</a>]</code>)
+                  (<code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="pyindexrepo.main.ThermalExpansion" href="#pyindexrepo.main.ThermalExpansion">ThermalExpansion</a>]</code>)
               –
               <div class="doc-md-description">
                 <p>A list of instances of the ThermalExpansion class representing thermal expansion properties.
@@ -1500,7 +1463,7 @@ None if unspecified.</p>
 
 
               <details class="quote">
-                <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+                <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
 class Specs:
     """
@@ -1703,7 +1666,7 @@ class Specs:
 <div class="doc doc-object doc-function">
 
 
-<h3 id="pyindexrepo.pyindexrepo.Specs.get_coefficient_of_thermal_expansion" class="doc doc-heading">
+<h3 id="pyindexrepo.main.Specs.get_coefficient_of_thermal_expansion" class="doc doc-heading">
             <code class="highlight language-python">get_coefficient_of_thermal_expansion(temperature)</code>
 
 </h3>
@@ -1714,7 +1677,7 @@ class Specs:
         <p>Returns the coefficient of thermal expansion for a given temperature.</p>
 
             <details class="quote">
-              <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def get_coefficient_of_thermal_expansion(self, temperature: float) -&gt; float:
     """Returns the coefficient of thermal expansion for a given temperature."""
     if self.thermal_expansion is not None:
@@ -1761,7 +1724,7 @@ class Specs:
 
 
 
-<h2 id="pyindexrepo.pyindexrepo.TabulatedIndexData" class="doc doc-heading">
+<h2 id="pyindexrepo.main.TabulatedIndexData" class="doc doc-heading">
             <code>TabulatedIndexData</code>
 
 
@@ -1841,7 +1804,7 @@ True to raise an error, False to suppress errors. Default is True.</p>
 
 
               <details class="quote">
-                <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+                <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
 class TabulatedIndexData:
     """
@@ -1899,7 +1862,7 @@ class TabulatedIndexData:
 
 
 
-<h2 id="pyindexrepo.pyindexrepo.ThermalDispersion" class="doc doc-heading">
+<h2 id="pyindexrepo.main.ThermalDispersion" class="doc doc-heading">
             <code>ThermalDispersion</code>
 
 
@@ -1966,7 +1929,7 @@ For speed reasons, the function delta_n_abs is outsourced to the dispersion_form
 
 
               <details class="quote">
-                <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+                <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
 class ThermalDispersion:
     """Thermal Dispersion
@@ -2025,7 +1988,7 @@ class ThermalDispersion:
 
 
 
-<h2 id="pyindexrepo.pyindexrepo.ThermalExpansion" class="doc doc-heading">
+<h2 id="pyindexrepo.main.ThermalExpansion" class="doc doc-heading">
             <code>ThermalExpansion</code>
 
 
@@ -2051,7 +2014,7 @@ Attributes:
 
 
               <details class="quote">
-                <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+                <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
 class ThermalExpansion:
     """Thermal expansion
@@ -2089,7 +2052,7 @@ class ThermalExpansion:
 
 
 
-<h2 id="pyindexrepo.pyindexrepo.YAMLMaterialData" class="doc doc-heading">
+<h2 id="pyindexrepo.main.YAMLMaterialData" class="doc doc-heading">
             <code>YAMLMaterialData</code>
 
 
@@ -2118,7 +2081,7 @@ class ThermalExpansion:
         <ul class="first simple">
             <li>
               <b><code>n_data</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.YAMLRefractiveIndexData" href="#pyindexrepo.pyindexrepo.YAMLRefractiveIndexData">YAMLRefractiveIndexData</a></code>)
+                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.main.YAMLRefractiveIndexData" href="#pyindexrepo.main.YAMLRefractiveIndexData">YAMLRefractiveIndexData</a></code>)
               –
               <div class="doc-md-description">
                 <p>An instance of YAMLRefractiveIndexData containing refractive index (n) data.</p>
@@ -2126,7 +2089,7 @@ class ThermalExpansion:
             </li>
             <li>
               <b><code>k_data</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.YAMLRefractiveIndexData" href="#pyindexrepo.pyindexrepo.YAMLRefractiveIndexData">YAMLRefractiveIndexData</a></code>)
+                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.main.YAMLRefractiveIndexData" href="#pyindexrepo.main.YAMLRefractiveIndexData">YAMLRefractiveIndexData</a></code>)
               –
               <div class="doc-md-description">
                 <p>An instance of YAMLRefractiveIndexData containing extinction coefficient (k) data.</p>
@@ -2161,7 +2124,7 @@ Default is an empty string, indicating no references.</p>
 
 
               <details class="quote">
-                <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+                <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
 class YAMLMaterialData:
     """
@@ -2206,7 +2169,7 @@ class YAMLMaterialData:
 
 
 
-<h2 id="pyindexrepo.pyindexrepo.YAMLRefractiveIndexData" class="doc doc-heading">
+<h2 id="pyindexrepo.main.YAMLRefractiveIndexData" class="doc doc-heading">
             <code>YAMLRefractiveIndexData</code>
 
 
@@ -2279,7 +2242,7 @@ Default is an empty string, indicating unspecified data.</p>
 
 
               <details class="quote">
-                <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+                <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
 class YAMLRefractiveIndexData:
     """
@@ -2325,7 +2288,7 @@ class YAMLRefractiveIndexData:
 <div class="doc doc-object doc-function">
 
 
-<h2 id="pyindexrepo.pyindexrepo.yaml_to_material" class="doc doc-heading">
+<h2 id="pyindexrepo.main.yaml_to_material" class="doc doc-heading">
             <code class="highlight language-python">yaml_to_material(filepath, lib_shelf, lib_book, lib_page, lib_name)</code>
 
 </h2>
@@ -2404,7 +2367,7 @@ class YAMLRefractiveIndexData:
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><a class="autorefs autorefs-internal" title="pyindexrepo.pyindexrepo.Material" href="#pyindexrepo.pyindexrepo.Material">Material</a></code>
+                  <code><a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a> | None</code>
               –
               <div class="doc-md-description">
                 <p>Material object</p>
@@ -2416,10 +2379,10 @@ class YAMLRefractiveIndexData:
   </tbody>
 </table>
             <details class="quote">
-              <summary>Source code in <code>pyindexrepo/pyindexrepo.py</code></summary>
+              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def yaml_to_material(
     filepath: str | Path, lib_shelf: str, lib_book: str, lib_page: str, lib_name: str
-) -&gt; Material:
+) -&gt; Material | None:
     """Converts RefractiveIndex.info YAML to Material
 
     Reads a yaml file of the refractiveindex database and converts it to a Material object.
@@ -2518,9 +2481,11 @@ class YAMLRefractiveIndexData:
                 logger.debug(specs)
                 specs = Specs.read_specs_from_yaml(specs)
         except ScannerError:
-            print(f"data in {filepath} can not be read")
+            logger.warning(f"Could not read data in {filepath}")
+            return None
         except ValueError:
-            print(f"data in {filepath} can not be read due to bad data")
+            logger.warning(f"Could not read data in {filepath} due to bad data")
+            return None
 
     return Material(
         n_class,

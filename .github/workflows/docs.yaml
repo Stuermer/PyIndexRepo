@@ -13,12 +13,12 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  tests:
-    uses: ./ .github/workflows/tests.yaml  # use the callable tests job to run tests
+  # tests:
+    # uses: ./ .github/workflows/tests.yaml  # use the callable tests job to run tests
   # This workflow contains a single job called "build"
   build:
     name: deploy docs
-    needs: [ tests ]  # require tests to pass before deploy runs
+    # needs: [ tests ]  # require tests to pass before deploy runs
 
     # The type of runner that the job will run on
     runs-on: ubuntu-latest

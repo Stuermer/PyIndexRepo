@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>pyindexrepo - PyIndexRepo</title>
+    <title>API reference - PyIndexRepo</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
@@ -13,8 +13,8 @@
     
       <script>
         // Current page data
-        var mkdocs_page_name = "pyindexrepo";
-        var mkdocs_page_input_path = "api_docs.md";
+        var mkdocs_page_name = "API reference";
+        var mkdocs_page_input_path = "api.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -44,12 +44,11 @@
                 <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
                 </li>
               </ul>
-              <p class="caption"><span class="caption-text">API Reference</span></p>
               <ul class="current">
-                  <li class="toctree-l1 current"><a class="reference internal current" href="#">pyindexrepo</a>
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">API reference</a>
     <ul class="current">
     </ul>
-                  </li>
+                </li>
               </ul>
       </div>
     </div>
@@ -65,8 +64,7 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-          <li class="breadcrumb-item">API Reference</li>
-      <li class="breadcrumb-item active">pyindexrepo</li>
+      <li class="breadcrumb-item active">API reference</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -193,7 +191,7 @@ class FormulaIndexData:
     def __post_init__(self):
         self.coefficients = np.array(self.coefficients, dtype=float)
 
-    def get_n_or_k(self, wavelength):
+    def get_n_or_k(self, wavelength: float | np.ndarray) -&gt; float | np.ndarray:
         if isinstance(wavelength, float) or isinstance(wavelength, np.ndarray):
             return self.formula(wavelength, self.coefficients)
         elif isinstance(wavelength, list):
@@ -322,24 +320,58 @@ class Material:
     specs: Specs | None = field(default=None)
     yaml_data: YAMLLibraryData = field(default=None)
 
-    def get_n(self, wavelength):
+    def get_n(self, wavelength: float | np.ndarray) -&gt; float | np.ndarray:
+        """Get refractive index n for a given wavelength or array of wavelengths.
+
+        Args:
+            wavelength: Wavelength or array of wavelengths in micrometers.
+
+        Returns:
+            float or array of floats: Refractive index n for the given wavelength
+        """
         if self.n is None:
             warnings.warn("No n data. Returning 0")
             return np.zeros_like(wavelength)
         return self.n.get_n_or_k(wavelength)
 
-    def get_k(self, wavelength):
+    def get_k(self, wavelength: float | np.ndarray) -&gt; float | np.ndarray:
+        """Get extinction coefficient k for a given wavelength or array of wavelengths.
+
+        Args:
+            wavelength: Wavelength or array of wavelengths in micrometers.
+
+        Returns:
+            float or array of floats: Extinction coefficient k for the given wavelength
+        """
         if self.k is None:
             warnings.warn("No k data. Returning 0")
             return np.zeros_like(wavelength)
         return self.k.get_n_or_k(wavelength)
 
-    def get_nk(self, wavelength):
+    def get_nk(self, wavelength: float | np.ndarray) -&gt; tuple[float | np.ndarray, float | np.ndarray]:
+        """Get refractive index n and extinction coefficient k for a given wavelength or array of wavelengths.
+
+        Args:
+            wavelength: Wavelength or array of wavelengths in micrometers.
+
+        Returns:
+            tuple of floats or arrays of floats: Refractive index n and extinction coefficient k for the given wavelength
+        """
         return self.get_n(wavelength), self.get_k(wavelength)
 
     def get_n_at_temperature(
         self, wavelength: float | np.ndarray, temperature: float, P: float = 0.10133
     ) -&gt; float | np.ndarray:
+        """Get refractive index n at a given temperature for a given wavelength or array of wavelengths.
+
+        Args:
+            wavelength: Wavelength or array of wavelengths in micrometers.
+            temperature: Temperature in degrees
+            P: Pressure in MPa. Default is 0.10133 MPa (1 atm).
+
+        Returns:
+            float or array of floats: Refractive index n at the given temperature for the given wavelength
+        """
         assert self.specs is not None, "There are no specs available for this material"
         assert self.specs.thermal_expansion is not None, (
             "There is no thermal dispersion formula available " "for this material"
@@ -390,6 +422,372 @@ class Material:
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pyindexrepo.main.Material.get_k" class="doc doc-heading">
+            <code class="highlight language-python">get_k(wavelength)</code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get extinction coefficient k for a given wavelength or array of wavelengths.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>wavelength</code></b>
+                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Wavelength or array of wavelengths in micrometers.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code>float | <span title="numpy.ndarray">ndarray</span></code>
+              –
+              <div class="doc-md-description">
+                <p>float or array of floats: Extinction coefficient k for the given wavelength</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+            <details class="quote">
+              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
+              <pre class="highlight"><code class="language-python">def get_k(self, wavelength: float | np.ndarray) -&gt; float | np.ndarray:
+    """Get extinction coefficient k for a given wavelength or array of wavelengths.
+
+    Args:
+        wavelength: Wavelength or array of wavelengths in micrometers.
+
+    Returns:
+        float or array of floats: Extinction coefficient k for the given wavelength
+    """
+    if self.k is None:
+        warnings.warn("No k data. Returning 0")
+        return np.zeros_like(wavelength)
+    return self.k.get_n_or_k(wavelength)</code></pre>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pyindexrepo.main.Material.get_n" class="doc doc-heading">
+            <code class="highlight language-python">get_n(wavelength)</code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get refractive index n for a given wavelength or array of wavelengths.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>wavelength</code></b>
+                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Wavelength or array of wavelengths in micrometers.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code>float | <span title="numpy.ndarray">ndarray</span></code>
+              –
+              <div class="doc-md-description">
+                <p>float or array of floats: Refractive index n for the given wavelength</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+            <details class="quote">
+              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
+              <pre class="highlight"><code class="language-python">def get_n(self, wavelength: float | np.ndarray) -&gt; float | np.ndarray:
+    """Get refractive index n for a given wavelength or array of wavelengths.
+
+    Args:
+        wavelength: Wavelength or array of wavelengths in micrometers.
+
+    Returns:
+        float or array of floats: Refractive index n for the given wavelength
+    """
+    if self.n is None:
+        warnings.warn("No n data. Returning 0")
+        return np.zeros_like(wavelength)
+    return self.n.get_n_or_k(wavelength)</code></pre>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pyindexrepo.main.Material.get_n_at_temperature" class="doc doc-heading">
+            <code class="highlight language-python">get_n_at_temperature(wavelength, temperature, P=0.10133)</code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get refractive index n at a given temperature for a given wavelength or array of wavelengths.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>wavelength</code></b>
+                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Wavelength or array of wavelengths in micrometers.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>temperature</code></b>
+                  (<code>float</code>)
+              –
+              <div class="doc-md-description">
+                <p>Temperature in degrees</p>
+              </div>
+            </li>
+            <li>
+              <b><code>P</code></b>
+                  (<code>float</code>, default:
+                      <code>0.10133</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Pressure in MPa. Default is 0.10133 MPa (1 atm).</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code>float | <span title="numpy.ndarray">ndarray</span></code>
+              –
+              <div class="doc-md-description">
+                <p>float or array of floats: Refractive index n at the given temperature for the given wavelength</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+            <details class="quote">
+              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
+              <pre class="highlight"><code class="language-python">def get_n_at_temperature(
+    self, wavelength: float | np.ndarray, temperature: float, P: float = 0.10133
+) -&gt; float | np.ndarray:
+    """Get refractive index n at a given temperature for a given wavelength or array of wavelengths.
+
+    Args:
+        wavelength: Wavelength or array of wavelengths in micrometers.
+        temperature: Temperature in degrees
+        P: Pressure in MPa. Default is 0.10133 MPa (1 atm).
+
+    Returns:
+        float or array of floats: Refractive index n at the given temperature for the given wavelength
+    """
+    assert self.specs is not None, "There are no specs available for this material"
+    assert self.specs.thermal_expansion is not None, (
+        "There is no thermal dispersion formula available " "for this material"
+    )
+    if self.specs.wavelength_is_vacuum:
+        n_abs = self.get_n(wavelength)
+        return n_abs + self.specs.thermal_dispersion.delta_n_abs(
+            n_abs,
+            wavelength,
+            temperature - self.specs.temperature,
+            self.specs.thermal_dispersion.coefficients,
+        )
+    else:
+        rel_wavelength = (
+            wavelength
+            * dispersion_formulas.n_air(wavelength, temperature, P)
+            / dispersion_formulas.n_air(wavelength)
+        )
+        n_rel = self.get_n(rel_wavelength)
+        n_abs = dispersion_formulas.relative_to_absolute(
+            n_rel, rel_wavelength, self.specs.temperature, 0.10133
+        )
+        n_abs += self.specs.thermal_dispersion.delta_n_abs(
+            n_abs,
+            rel_wavelength,
+            temperature - self.specs.temperature,
+            *self.specs.thermal_dispersion.coefficients,
+        )
+        return dispersion_formulas.absolute_to_relative(
+            n_abs, rel_wavelength, temperature, P
+        )</code></pre>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pyindexrepo.main.Material.get_nk" class="doc doc-heading">
+            <code class="highlight language-python">get_nk(wavelength)</code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get refractive index n and extinction coefficient k for a given wavelength or array of wavelengths.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>wavelength</code></b>
+                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Wavelength or array of wavelengths in micrometers.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code>tuple[float | <span title="numpy.ndarray">ndarray</span>, float | <span title="numpy.ndarray">ndarray</span>]</code>
+              –
+              <div class="doc-md-description">
+                <p>tuple of floats or arrays of floats: Refractive index n and extinction coefficient k for the given wavelength</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+            <details class="quote">
+              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
+              <pre class="highlight"><code class="language-python">def get_nk(self, wavelength: float | np.ndarray) -&gt; tuple[float | np.ndarray, float | np.ndarray]:
+    """Get refractive index n and extinction coefficient k for a given wavelength or array of wavelengths.
+
+    Args:
+        wavelength: Wavelength or array of wavelengths in micrometers.
+
+    Returns:
+        tuple of floats or arrays of floats: Refractive index n and extinction coefficient k for the given wavelength
+    """
+    return self.get_n(wavelength), self.get_k(wavelength)</code></pre>
+            </details>
+    </div>
+
+</div>
 
 
 
@@ -556,7 +954,14 @@ class RefractiveIndexLibrary:
             return True
 
     def _download_latest_commit(self) -&gt; bool:
-        """Download latest library from GitHub."""
+        """Download latest library from GitHub.
+
+        Downloads the latest library from the refractiveindex.info GitHub repository
+         and extracts the necessary data files.
+
+        Returns:
+            bool: True if the library was successfully downloaded, False otherwise.
+        """
         if self._is_library_outdated() or self.force_upgrade:
             logger.info("New Library available... Downloading...")
             zip_url = "https://api.github.com/repos/polyanskiy/refractiveindex.info-database/zipball"
@@ -591,30 +996,42 @@ class RefractiveIndexLibrary:
             return False
 
     def _load_from_yaml(self):
+        """Load data from yaml file for internal use
+
+        Returns:
+            None
+        """
         logger.info("load from yaml")
         with open(self.path_to_library) as f:
             yaml_data = yaml.safe_load(f)
 
-        for s in yaml_data:
-            for book in s["content"]:
-                if "BOOK" in book:
+            for s in yaml_data:
+                for book in s["content"]:
+                    if "BOOK" not in book:
+                        continue
                     for page in book["content"]:
-                        if "PAGE" in page:
-                            # fill yaml list
-                            self.materials_yaml.append(
-                                YAMLLibraryData(
-                                    name=page["name"],
-                                    lib_page=page["PAGE"],
-                                    lib_book=book["BOOK"],
-                                    lib_shelf=s["SHELF"],
-                                    lib_data=page["data"],
-                                    lib_path=self.path_to_library.parent.joinpath(
-                                        "data-nk"
-                                    ).joinpath(page["data"]),
-                                )
+                        if "PAGE" not in page:
+                            continue
+                        # fill yaml list
+                        self.materials_yaml.append(
+                            YAMLLibraryData(
+                                name=page["name"],
+                                lib_page=page["PAGE"],
+                                lib_book=book["BOOK"],
+                                lib_shelf=s["SHELF"],
+                                lib_data=page["data"],
+                                lib_path=self.path_to_library.parent.joinpath(
+                                    "data-nk"
+                                ).joinpath(page["data"]),
                             )
+                        )
 
     def _convert_to_material_dict(self):
+        """Convert yaml data to Material objects
+
+        Returns:
+            None
+        """
         for m in self.materials_yaml:
             # try to load material from yaml
             mat = yaml_to_material(self.path_to_library.parent.joinpath("data-nk").joinpath(m.lib_data), m.lib_shelf,
@@ -672,8 +1089,9 @@ class RefractiveIndexLibrary:
         or None if it doesn't find a match.
 
         Args:
-            page_name:
-            exact_match:
+            page_name: name of the material as given as page name on refractiveindex.info
+            exact_match: if True, only exact matches are considered. Default is False. e.g. if False,
+            'BK7' will return all BK7 glasses, including N-BK7, K-BK7, etc.
 
         Returns:
             Material or list of Materials matching the Name
@@ -1198,7 +1616,7 @@ or None if it doesn't find a match.</p>
                   (<code>str</code>)
               –
               <div class="doc-md-description">
-                
+                <p>name of the material as given as page name on refractiveindex.info</p>
               </div>
             </li>
             <li>
@@ -1208,7 +1626,7 @@ or None if it doesn't find a match.</p>
 )
               –
               <div class="doc-md-description">
-                
+                <p>if True, only exact matches are considered. Default is False. e.g. if False,</p>
               </div>
             </li>
         </ul>
@@ -1258,8 +1676,9 @@ or None if it doesn't find a match.</p>
     or None if it doesn't find a match.
 
     Args:
-        page_name:
-        exact_match:
+        page_name: name of the material as given as page name on refractiveindex.info
+        exact_match: if True, only exact matches are considered. Default is False. e.g. if False,
+        'BK7' will return all BK7 glasses, including N-BK7, K-BK7, etc.
 
     Returns:
         Material or list of Materials matching the Name
@@ -2506,10 +2925,7 @@ class YAMLRefractiveIndexData:
 
     </div>
 
-</div><p>rendering:
-show_root_toc_entry: true
-show_source: false</p>
-
+</div>
 
 <div class="doc doc-object doc-module">
 
@@ -2547,7 +2963,7 @@ show_source: false</p>
     <div class="doc doc-contents ">
 
         <p>Converts absolute refractive index to relative</p>
-<p>Formula (5) of TIE-19</p>
+<p>Formula (5) of <a href="https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads">Schott TIE-19</a></p>
 
 
 <table class="field-list">
@@ -2613,7 +3029,7 @@ def absolute_to_relative(
 ):
     """Converts absolute refractive index to relative
 
-    Formula (5) of TIE-19
+    Formula (5) of [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads)
 
     Args:
         n_abs: absolute refractive index.
@@ -2643,7 +3059,7 @@ def absolute_to_relative(
 
         <p>deltaT of absolute refractive index at certain Temperature</p>
 <p>Returns the temperature coefficient of the absolute refractive index for given wavelength and temperature
-Formula (3) of Schott TIE-19</p>
+Formula (3) of <a href="https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads">Schott TIE-19</a></p>
 
 
 <table class="field-list">
@@ -2751,7 +3167,7 @@ def delta_absolute_temperature(
     """deltaT of absolute refractive index at certain Temperature
 
     Returns the temperature coefficient of the absolute refractive index for given wavelength and temperature
-    Formula (3) of Schott TIE-19
+    Formula (3) of [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads)
 
     Args:
         n_abs_ref: absolute refractive index at reference temperature
@@ -2795,7 +3211,7 @@ def delta_absolute_temperature(
 
         <p>dn/dT of absolute refractive index at certain Temperature</p>
 <p>Returns the temperature coefficient of the absolute refractive index for given wavelength and temperature
-Formula (2) of Schott TIE-19</p>
+Formula (2) of <a href="https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads">Schott TIE-19</a></p>
 
 
 <table class="field-list">
@@ -2903,7 +3319,7 @@ def dn_absolute_temperature(
     """dn/dT of absolute refractive index at certain Temperature
 
     Returns the temperature coefficient of the absolute refractive index for given wavelength and temperature
-    Formula (2) of Schott TIE-19
+    Formula (2) of [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads)
 
     Args:
         n_abs_ref: absolute refractive index at reference temperature
@@ -2946,9 +3362,8 @@ def dn_absolute_temperature(
     <div class="doc doc-contents ">
 
         <p>Temperature coefficient dn/dT of air</p>
-<p>Calculates the temperature dependence of the refractive index of air as given in Schott's TIE 19:
-Formula (10) of TIE-19
-https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads</p>
+<p>Calculates the temperature dependence of the refractive index of air as given in
+<a href="https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads">Schott TIE-19</a> - Formula (10):</p>
 
 
 <table class="field-list">
@@ -3018,9 +3433,8 @@ https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads</p>
 def dn_dt_air(wl: float | np.ndarray, T: float, P: float):
     """Temperature coefficient dn/dT of air
 
-    Calculates the temperature dependence of the refractive index of air as given in Schott's TIE 19:
-    Formula (10) of TIE-19
-    https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads
+    Calculates the temperature dependence of the refractive index of air as given in
+    [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads) - Formula (10):
 
     Args:
         wl: wavelength
@@ -3048,7 +3462,41 @@ def dn_dt_air(wl: float | np.ndarray, T: float, P: float):
     <div class="doc doc-contents ">
 
         <p>Sellmeier (preferred) dispersion formula</p>
+<p>The formula has the general form:</p>
+<div class="arithmatex">\[
+{n}^{2}-1={C}_{1}+\frac{{C}_{2}{\lambda }^{2}}{{\lambda }^{2}-{C}_{3}^{2}}+\frac{{C}_{4}{\lambda }^{2}}{{\lambda }^{2}-{C}_{5}^{2}}+\frac{{C}_{6}{\lambda }^{2}}{{\lambda }^{2}-{C}_{7}^{2}}+\frac{{C}_{8}{\lambda }^{2}}{{\lambda }^{2}-{C}_{9}^{2}}+\frac{{C}_{10}{\lambda }^{2}}{{\lambda }^{2}-{C}_{11}^{2}}+\frac{{C}_{12}{\lambda }^{2}}{{\lambda }^{2}-{C}_{13}^{2}}+\frac{{C}_{14}{\lambda }^{2}}{{\lambda }^{2}-{C}_{15}^{2}}+\frac{{C}_{16}{\lambda }^{2}}{{\lambda }^{2}-{C}_{17}^{2}}
+\]</div>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>wavelength</code></b>
+              –
+              <div class="doc-md-description">
+                <p>wavelength</p>
+              </div>
+            </li>
+            <li>
+              <b><code>coefficients</code></b>
+              –
+              <div class="doc-md-description">
+                <p>list of coefficients</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -3059,7 +3507,20 @@ def dn_dt_air(wl: float | np.ndarray, T: float, P: float):
     cache=True,
 )
 def formula_1(wavelength, coefficients):
-    """Sellmeier (preferred) dispersion formula"""
+    r"""Sellmeier (preferred) dispersion formula
+
+    The formula has the general form:
+
+
+    $$
+    {n}^{2}-1={C}_{1}+\frac{{C}_{2}{\lambda }^{2}}{{\lambda }^{2}-{C}_{3}^{2}}+\frac{{C}_{4}{\lambda }^{2}}{{\lambda }^{2}-{C}_{5}^{2}}+\frac{{C}_{6}{\lambda }^{2}}{{\lambda }^{2}-{C}_{7}^{2}}+\frac{{C}_{8}{\lambda }^{2}}{{\lambda }^{2}-{C}_{9}^{2}}+\frac{{C}_{10}{\lambda }^{2}}{{\lambda }^{2}-{C}_{11}^{2}}+\frac{{C}_{12}{\lambda }^{2}}{{\lambda }^{2}-{C}_{13}^{2}}+\frac{{C}_{14}{\lambda }^{2}}{{\lambda }^{2}-{C}_{15}^{2}}+\frac{{C}_{16}{\lambda }^{2}}{{\lambda }^{2}-{C}_{17}^{2}}
+    $$
+
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
     nsq = np.ones_like(wavelength) + coefficients[0]
     for i in range(1, len(coefficients), 2):
         nsq = nsq + formula_1_helper(wavelength, coefficients[i], coefficients[i + 1])
@@ -3080,8 +3541,42 @@ def formula_1(wavelength, coefficients):
 
     <div class="doc doc-contents ">
 
-        <p>Sellmeier-2 dispersion formula</p>
+        <p>Sellmeier-2 dispersion formula.</p>
+<p>The formula has the general form:</p>
+<div class="arithmatex">\[
+{n}^{2}-1={C}_{1}+\frac{{C}_{2}{\lambda }^{2}}{{\lambda }^{2}-{C}_{3}}+\frac{{C}_{4}{\lambda }^{2}}{{\lambda }^{2}-{C}_{5}}+\frac{{C}_{6}{\lambda }^{2}}{{\lambda }^{2}-{C}_{7}}+\frac{{C}_{8}{\lambda }^{2}}{{\lambda }^{2}-{C}_{9}}+\frac{{C}_{10}{\lambda }^{2}}{{\lambda }^{2}-{C}_{11}}+\frac{{C}_{12}{\lambda }^{2}}{{\lambda }^{2}-{C}_{13}}+\frac{{C}_{14}{\lambda }^{2}}{{\lambda }^{2}-{C}_{15}}+\frac{{C}_{16}{\lambda }^{2}}{{\lambda }^{2}-{C}_{17}}
+\]</div>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>wavelength</code></b>
+              –
+              <div class="doc-md-description">
+                <p>wavelength</p>
+              </div>
+            </li>
+            <li>
+              <b><code>coefficients</code></b>
+              –
+              <div class="doc-md-description">
+                <p>list of coefficients</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -3092,7 +3587,18 @@ def formula_1(wavelength, coefficients):
     cache=True,
 )
 def formula_2(wavelength, coefficients):
-    """Sellmeier-2 dispersion formula"""
+    r"""Sellmeier-2 dispersion formula.
+
+    The formula has the general form:
+
+    $$
+    {n}^{2}-1={C}_{1}+\frac{{C}_{2}{\lambda }^{2}}{{\lambda }^{2}-{C}_{3}}+\frac{{C}_{4}{\lambda }^{2}}{{\lambda }^{2}-{C}_{5}}+\frac{{C}_{6}{\lambda }^{2}}{{\lambda }^{2}-{C}_{7}}+\frac{{C}_{8}{\lambda }^{2}}{{\lambda }^{2}-{C}_{9}}+\frac{{C}_{10}{\lambda }^{2}}{{\lambda }^{2}-{C}_{11}}+\frac{{C}_{12}{\lambda }^{2}}{{\lambda }^{2}-{C}_{13}}+\frac{{C}_{14}{\lambda }^{2}}{{\lambda }^{2}-{C}_{15}}+\frac{{C}_{16}{\lambda }^{2}}{{\lambda }^{2}-{C}_{17}}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
     nsq = np.ones_like(wavelength) + coefficients[0]
     for i in range(1, len(coefficients), 2):
         nsq = nsq + formula_2_helper(wavelength, coefficients[i], coefficients[i + 1])
@@ -3113,8 +3619,42 @@ def formula_2(wavelength, coefficients):
 
     <div class="doc doc-contents ">
 
-        <p>Polynomial dispersion formula</p>
+        <p>Polynomial dispersion formula.</p>
+<p>The formula has the general form:</p>
+<div class="arithmatex">\[
+{n}^{2}={C}_{1}+{C}_{2}{\lambda }^{{C}_{3}}+{C}_{4}{\lambda }^{{C}_{5}}+{C}_{6}{\lambda }^{{C}_{7}}+{C}_{8}{\lambda }^{{C}_{9}}+{C}_{10}{\lambda }^{{C}_{11}}+{C}_{12}{\lambda }^{{C}_{13}}+{C}_{14}{\lambda }^{{C}_{15}}+{C}_{16}{\lambda }^{{C}_{17}}
+\]</div>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>wavelength</code></b>
+              –
+              <div class="doc-md-description">
+                <p>wavelength</p>
+              </div>
+            </li>
+            <li>
+              <b><code>coefficients</code></b>
+              –
+              <div class="doc-md-description">
+                <p>list of coefficients</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -3125,7 +3665,18 @@ def formula_2(wavelength, coefficients):
     cache=True,
 )
 def formula_3(wavelength, coefficients):
-    """Polynomial dispersion formula"""
+    r"""Polynomial dispersion formula.
+
+    The formula has the general form:
+
+    $$
+    {n}^{2}={C}_{1}+{C}_{2}{\lambda }^{{C}_{3}}+{C}_{4}{\lambda }^{{C}_{5}}+{C}_{6}{\lambda }^{{C}_{7}}+{C}_{8}{\lambda }^{{C}_{9}}+{C}_{10}{\lambda }^{{C}_{11}}+{C}_{12}{\lambda }^{{C}_{13}}+{C}_{14}{\lambda }^{{C}_{15}}+{C}_{16}{\lambda }^{{C}_{17}}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
     nsq = np.ones_like(wavelength) * coefficients[0]
     for i in range(1, len(coefficients), 2):
         nsq = nsq + formula_3457_helper(
@@ -3149,7 +3700,41 @@ def formula_3(wavelength, coefficients):
     <div class="doc doc-contents ">
 
         <p>RefractiveIndex.INFO dispersion formula</p>
+<p>The formula has the general form:</p>
+<div class="arithmatex">\[
+{n}^{2}={C}_{1}+\frac{{C}_{2}{\lambda }^{{C}_{3}}}{{\lambda }^{2}-{C}_{4}^{{C}_{5}}}+\frac{{C}_{6}{\lambda }^{{C}_{7}}}{{\lambda }^{2}-{C}_{8}^{{C}_{9}}}+{C}_{10}{\lambda }^{{C}_{11}}+{C}_{12}{\lambda }^{{C}_{13}}+{C}_{14}{\lambda }^{{C}_{15}}+{C}_{16}{\lambda }^{{C}_{17}}
+\]</div>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>wavelength</code></b>
+              –
+              <div class="doc-md-description">
+                <p>wavelength</p>
+              </div>
+            </li>
+            <li>
+              <b><code>coefficients</code></b>
+              –
+              <div class="doc-md-description">
+                <p>list of coefficients</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -3160,7 +3745,18 @@ def formula_3(wavelength, coefficients):
     cache=True,
 )
 def formula_4(wavelength, coefficients):
-    """RefractiveIndex.INFO dispersion formula"""
+    r"""RefractiveIndex.INFO dispersion formula
+
+    The formula has the general form:
+
+    $$
+    {n}^{2}={C}_{1}+\frac{{C}_{2}{\lambda }^{{C}_{3}}}{{\lambda }^{2}-{C}_{4}^{{C}_{5}}}+\frac{{C}_{6}{\lambda }^{{C}_{7}}}{{\lambda }^{2}-{C}_{8}^{{C}_{9}}}+{C}_{10}{\lambda }^{{C}_{11}}+{C}_{12}{\lambda }^{{C}_{13}}+{C}_{14}{\lambda }^{{C}_{15}}+{C}_{16}{\lambda }^{{C}_{17}}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
     nsq = np.zeros_like(wavelength) + coefficients[0]
     for i in range(1, min(9, len(coefficients)), 4):
         nsq = nsq + formula_4_helper1(
@@ -3193,7 +3789,41 @@ def formula_4(wavelength, coefficients):
     <div class="doc doc-contents ">
 
         <p>Cauchy dispersion formula</p>
+<p>The formula has the general form:</p>
+<div class="arithmatex">\[
+n={C}_{1}+{C}_{2}{\lambda }^{{C}_{3}}+{C}_{4}{\lambda }^{{C}_{5}}+{C}_{6}{\lambda }^{{C}_{7}}+{C}_{8}{\lambda }^{{C}_{9}}+{C}_{10}{\lambda }^{{C}_{11}}
+\]</div>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>wavelength</code></b>
+              –
+              <div class="doc-md-description">
+                <p>wavelength</p>
+              </div>
+            </li>
+            <li>
+              <b><code>coefficients</code></b>
+              –
+              <div class="doc-md-description">
+                <p>list of coefficients</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -3204,7 +3834,18 @@ def formula_4(wavelength, coefficients):
     cache=True,
 )
 def formula_5(wavelength, coefficients):
-    """Cauchy dispersion formula"""
+    r"""Cauchy dispersion formula
+
+    The formula has the general form:
+
+    $$
+    n={C}_{1}+{C}_{2}{\lambda }^{{C}_{3}}+{C}_{4}{\lambda }^{{C}_{5}}+{C}_{6}{\lambda }^{{C}_{7}}+{C}_{8}{\lambda }^{{C}_{9}}+{C}_{10}{\lambda }^{{C}_{11}}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
     n = np.zeros_like(wavelength) + coefficients[0]
     for i in range(1, len(coefficients), 2):
         n = n + formula_3457_helper(wavelength, coefficients[i], coefficients[i + 1])
@@ -3226,7 +3867,41 @@ def formula_5(wavelength, coefficients):
     <div class="doc doc-contents ">
 
         <p>Gases dispersion formula</p>
+<p>The formula has the general form:</p>
+<div class="arithmatex">\[
+n-1={C}_{1}+\frac{{C}_{2}}{{C}_{3}-{\lambda }^{-2}}+\frac{{C}_{4}}{{C}_{5}-{\lambda }^{-2}}+\frac{{C}_{6}}{{C}_{7}-{\lambda }^{-2}}+\frac{{C}_{8}}{{C}_{9}-{\lambda }^{-2}}+\frac{{C}_{10}}{{C}_{11}-{\lambda }^{-2}}
+\]</div>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>wavelength</code></b>
+              –
+              <div class="doc-md-description">
+                <p>wavelength</p>
+              </div>
+            </li>
+            <li>
+              <b><code>coefficients</code></b>
+              –
+              <div class="doc-md-description">
+                <p>list of coefficients</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -3237,7 +3912,19 @@ def formula_5(wavelength, coefficients):
     cache=True,
 )
 def formula_6(wavelength, coefficients):
-    """Gases dispersion formula"""
+    r"""Gases dispersion formula
+
+    The formula has the general form:
+
+    $$
+    n-1={C}_{1}+\frac{{C}_{2}}{{C}_{3}-{\lambda }^{-2}}+\frac{{C}_{4}}{{C}_{5}-{\lambda }^{-2}}+\frac{{C}_{6}}{{C}_{7}-{\lambda }^{-2}}+\frac{{C}_{8}}{{C}_{9}-{\lambda }^{-2}}+\frac{{C}_{10}}{{C}_{11}-{\lambda }^{-2}}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+
+    """
     n = np.ones_like(wavelength) + coefficients[0]
     for i in range(1, len(coefficients), 2):
         n = n + formula_6_helper(wavelength, coefficients[i], coefficients[i + 1])
@@ -3259,7 +3946,41 @@ def formula_6(wavelength, coefficients):
     <div class="doc doc-contents ">
 
         <p>Herzberger dispersion formula</p>
+<p>The formula has the general form:</p>
+<div class="arithmatex">\[
+n={C}_{1}+\frac{{C}_{2}}{{\lambda }^{2}-0.028}+{C}_{3}{\left(\frac{1}{{\lambda }^{2}-0.028}\right)}^{2}+{C}_{4}{\lambda }^{2}+{C}_{5}{\lambda }^{4}+{C}_{6}{\lambda }^{6}
+\]</div>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>wavelength</code></b>
+              –
+              <div class="doc-md-description">
+                <p>wavelength</p>
+              </div>
+            </li>
+            <li>
+              <b><code>coefficients</code></b>
+              –
+              <div class="doc-md-description">
+                <p>list of coefficients</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -3270,13 +3991,164 @@ def formula_6(wavelength, coefficients):
     cache=True,
 )
 def formula_7(wavelength, coefficients):
-    """Herzberger dispersion formula"""
+    r"""Herzberger dispersion formula
+
+    The formula has the general form:
+
+    $$
+    n={C}_{1}+\frac{{C}_{2}}{{\lambda }^{2}-0.028}+{C}_{3}{\left(\frac{1}{{\lambda }^{2}-0.028}\right)}^{2}+{C}_{4}{\lambda }^{2}+{C}_{5}{\lambda }^{4}+{C}_{6}{\lambda }^{6}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
     n = np.zeros_like(wavelength) + coefficients[0]
     n = n + formula_7_helper1(wavelength, coefficients[1], 1)
     n = n + formula_7_helper1(wavelength, coefficients[2], 2)
     for i in range(3, len(coefficients)):
         n = n + formula_3457_helper(wavelength, coefficients[i], float64(2 * (i - 2)))
     return n</code></pre>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pyindexrepo.dispersion_formulas.formula_8" class="doc doc-heading">
+            <code class="highlight language-python">formula_8(wavelength, coefficients)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Formula 8 dispersion formula from refractiveindex.info</p>
+<p>The formula has the general form:</p>
+<div class="arithmatex">\[
+\frac{{n}^{2}-1}{{n}^{2}+2}={C}_{1}+\frac{{C}_{2}{\lambda }^{2}}{{\lambda }^{2}-{C}_{3}}+{C}_{4}{\lambda }^{2}
+\]</div>
+
+            <details class="quote">
+              <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
+              <pre class="highlight"><code class="language-python">@njit(
+    [
+        float64(float64, float64[:]),
+        float64[:](float64[:], float64[:]),
+    ],
+    cache=True,
+)
+def formula_8(wavelength, coefficients):
+    r"""Formula 8 dispersion formula from refractiveindex.info
+
+    The formula has the general form:
+
+    $$
+    \frac{{n}^{2}-1}{{n}^{2}+2}={C}_{1}+\frac{{C}_{2}{\lambda }^{2}}{{\lambda }^{2}-{C}_{3}}+{C}_{4}{\lambda }^{2}
+    $$
+
+    """
+    return np.sqrt(
+        (
+            wavelength**2
+            * (
+                2 * coefficients[0]
+                + 2 * coefficients[1]
+                + 2 * coefficients[3] * wavelength**2
+                + 1
+            )
+            - coefficients[2]
+            * (2 * coefficients[0] + 2 * coefficients[3] * wavelength**2 + 1)
+        )
+        / (
+            coefficients[2] * (coefficients[0] + coefficients[3] * wavelength**2 - 1)
+            - wavelength**2
+            * (coefficients[0] + coefficients[1] + coefficients[3] * wavelength ** 2 - 1)
+        )
+    )</code></pre>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pyindexrepo.dispersion_formulas.formula_9" class="doc doc-heading">
+            <code class="highlight language-python">formula_9(wavelength, coefficients)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Formula 9 dispersion formula from refractiveindex.info</p>
+<p>The formula has the general form:</p>
+<div class="arithmatex">\[
+{n}^{2}={C}_{1}+\frac{{C}_{2}}{{\lambda }^{2}-{C}_{3}}+\frac{{C}_{4}(\lambda -{C}_{5})}{{(\lambda -{C}_{5})}^{2}+{C}_{6}}
+\]</div>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>wavelength</code></b>
+              –
+              <div class="doc-md-description">
+                <p>wavelength</p>
+              </div>
+            </li>
+            <li>
+              <b><code>coefficients</code></b>
+              –
+              <div class="doc-md-description">
+                <p>list of coefficients</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+            <details class="quote">
+              <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
+              <pre class="highlight"><code class="language-python">@njit(
+    [
+        float64(float64, float64[:]),
+        float64[:](float64[:], float64[:]),
+    ],
+    cache=True,
+)
+def formula_9(wavelength, coefficients):
+    r"""Formula 9 dispersion formula from refractiveindex.info
+
+    The formula has the general form:
+
+    $$
+    {n}^{2}={C}_{1}+\frac{{C}_{2}}{{\lambda }^{2}-{C}_{3}}+\frac{{C}_{4}(\lambda -{C}_{5})}{{(\lambda -{C}_{5})}^{2}+{C}_{6}}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
+    return np.sqrt(
+        coefficients[0]
+        + coefficients[1] / (wavelength**2 - coefficients[2])
+        + coefficients[3]
+        * (wavelength - coefficients[4])
+        / ((wavelength - coefficients[4]) ** 2 + coefficients[5])
+    )</code></pre>
             </details>
     </div>
 
@@ -3294,7 +4166,7 @@ def formula_7(wavelength, coefficients):
     <div class="doc doc-contents ">
 
         <p>Calculates absolute refractive index with given dn/dT</p>
-<p>Formula (6) of TIE-19</p>
+<p>Formula (6) of <a href="https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads">Schott TIE-19</a></p>
 
 
 <table class="field-list">
@@ -3353,7 +4225,7 @@ def n_absolute_with_given_dndt(
 ):
     """Calculates absolute refractive index with given dn/dT
 
-    Formula (6) of TIE-19
+    Formula (6) of [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads)
 
     Args:
         n_rel: relative refractive index
@@ -3382,9 +4254,8 @@ def n_absolute_with_given_dndt(
     <div class="doc doc-contents ">
 
         <p>Refractive index of air</p>
-<p>Calculates the refractive index of air as described in Schott TIE 19:
-Formula (8) of TIE 19
-https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads</p>
+<p>Calculates the refractive index of air as described in
+<a href="https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads">Schott TIE-19</a> - Formula (8):</p>
 
 
 <table class="field-list">
@@ -3458,9 +4329,8 @@ https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads</p>
 def n_air(wl: float | np.ndarray, T: float = 20.0, P: float = 0.10133):
     """Refractive index of air
 
-    Calculates the refractive index of air as described in Schott TIE 19:
-    Formula (8) of TIE 19
-    https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads
+    Calculates the refractive index of air as described in
+    [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads) - Formula (8):
 
     Args:
         wl: wavelength
@@ -3493,7 +4363,7 @@ def n_air(wl: float | np.ndarray, T: float = 20.0, P: float = 0.10133):
     <div class="doc doc-contents ">
 
         <p>Converts relative refractive index to absolute</p>
-<p>Reverse of Formula (5) of TIE-19</p>
+<p>Reverse of Formula (5) of <a href="https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads">Schott TIE-19</a></p>
 
 
 <table class="field-list">
@@ -3559,7 +4429,7 @@ def relative_to_absolute(
 ):
     """Converts relative refractive index to absolute
 
-    Reverse of Formula (5) of TIE-19
+    Reverse of Formula (5) of [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads)
 
     Args:
         n_rel: relative refractive index
@@ -3582,9 +4452,7 @@ def relative_to_absolute(
 
     </div>
 
-</div><p>rendering:
-show_root_toc_entry: true
-show_source: false</p>
+</div>
               
             </div>
           </div><footer>
@@ -3621,6 +4489,8 @@ show_source: false</p>
     <script>var base_url = "..";</script>
     <script src="../js/theme_extra.js"></script>
     <script src="../js/theme.js"></script>
+      <script src="../javascripts/mathjax.js"></script>
+      <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       <script src="../search/main.js"></script>
     <script>
         jQuery(function () {

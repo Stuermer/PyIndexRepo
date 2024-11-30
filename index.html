@@ -43,13 +43,18 @@
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href="#">Home</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
+    </li>
     </ul>
                 </li>
               </ul>
-              <p class="caption"><span class="caption-text">API Reference</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="api_docs/">pyindexrepo</a>
-                  </li>
+                <li class="toctree-l1"><a class="reference internal" href="api/">API reference</a>
+                </li>
               </ul>
       </div>
     </div>
@@ -75,12 +80,60 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="welcome-to-pyindexrepo">Welcome to PyIndexRepo</h1>
-<p>This page provides the API reference for the PyIndexRepo package.</p>
+<h2 id="overview">Overview</h2>
+<p>PyIndexRepo is a Python package that provides a simple interface
+to the refractive index database at <a href="https://refractiveindex.info/">refractiveindex.info</a>.</p>
+<p>There are two main classes in the package:</p>
+<ul>
+<li><a class="autorefs autorefs-internal" href="api/#pyindexrepo.main.RefractiveIndexLibrary">RefractiveIndexLibrary</a>: This class provides access to the refractive index
+  database. It allows you to search for materials e.g. by name or refractive index.</li>
+<li><a class="autorefs autorefs-internal" href="api/#pyindexrepo.main.Material">Material</a>: This class represents a material with its refractive index data. It provides
+  methods to calculate the refractive index at any given wavelength based on the available data.
+  It is possible to use custom data for the calculation or to use one of the implemented dispersion formulas.</li>
+</ul>
+<p>For details on the available methods, see the <a href="api/">API documentation</a>.</p>
+<h2 id="usage">Usage</h2>
+<p>Here is a simple example of how to use the package:</p>
+<pre><code class="language-python">from pyindexrepo import RefractiveIndexLibrary
+
+# Create a database object
+db = RefractiveIndexLibrary()
+
+# Search for a material
+bk7 = db.search_material_by_page_name('N-BK7')  # returns a list of different BK7 glasses
+</code></pre>
+<p>Now, <code>bk7</code> is a list of <code>Material</code> objects, we can access further information about the material:</p>
+<pre><code class="language-python">for glass in bk7:
+    print(glass)
+</code></pre>
+<p>Let's say we are interested in the first glass in the list, we can access the refractive index data:</p>
+<pre><code class="language-python">print(bk7.get_n(0.5875618))  # get the refractive index at 587.5618 nm
+bk7.get_n(np.linspace(0.4, 0.8, 100))  # get the refractive index for a range of wavelengths
+</code></pre>
+<p>The Material package can be used to generate custom materials:
+Let's say we want to create a custom material with certain sellmeier coefficients:</p>
+<pre><code class="language-python">from pyindexrepo import Material, FormulaIndexData
+from pyindexrepo.dispersion_formulas import
+    formula_2  # the formula_2 is one particular implementation of the sellmeier formula. Check the documentation for more options. 
+
+# Create a custom material with sellmeier coefficients (B1, B2, B3, C1, C2, C3) = (1.5, 0.1, 0.2, 0.3, 0.4, 0.5)
+custom_material = Material(FormulaIndexData(formula_2, [1.5, 0.1, 0.2, 0.3, 0.4, 0.5]))
+print(custom_material.get_n(0.5875618))  # get the refractive index at 587.5618 nm
+</code></pre>
+<p>Note: The refractive index is calculated using the formula provided. The formula should be a function that takes the
+wavelength and the coefficients as arguments and returns the refractive index.
+It can be a custom function or one of the implemented dispersion formulas.</p>
+<p>These formulas are implemented in the <code>pyindexrepo.dispersion_formulas</code> module and are speed-optimized using the numba
+library.</p>
+<h2 id="installation">Installation</h2>
+<p>Installing the package is done via pip:</p>
+<pre><code class="language-bash">pip install pyindexrepo
+</code></pre>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="api_docs/" class="btn btn-neutral float-right" title="pyindexrepo">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="api/" class="btn btn-neutral float-right" title="API reference">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -104,7 +157,7 @@
     
     
     
-      <span><a href="api_docs/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="api/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
@@ -112,6 +165,8 @@
     <script>var base_url = ".";</script>
     <script src="js/theme_extra.js"></script>
     <script src="js/theme.js"></script>
+      <script src="javascripts/mathjax.js"></script>
+      <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       <script src="search/main.js"></script>
     <script>
         jQuery(function () {
@@ -124,5 +179,5 @@
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2024-11-28 19:49:44.212743+00:00
+Build Date UTC : 2024-11-30 10:21:29.588611+00:00
 -->

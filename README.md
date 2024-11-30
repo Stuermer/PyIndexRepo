@@ -1,5 +1,8 @@
 ![PyPI - Version](https://img.shields.io/pypi/v/PyIndexRepo)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/PyIndexRepo)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Stuermer/PyIndexRepo/tests.yaml?label=pytest)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Stuermer/PyIndexRepo/docs.yaml?label=mkdocs&link=https%3A%2F%2Fstuermer.github.io%2FPyIndexRepo%2F)
+
 
 
 # PyIndexRepo

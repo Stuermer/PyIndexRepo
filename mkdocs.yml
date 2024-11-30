@@ -4,14 +4,7 @@ plugins:
   - search
   - autorefs
   - mkdocstrings:
-      enabled: !ENV [ ENABLE_MKDOCSTRINGS, true ]
       default_handler: python
-      handlers:
-        python:
-          options:
-            show_source: true
-            show_inherited_members: true
-            group_by: "type"
 
 theme:
   name: readthedocs
@@ -19,7 +12,16 @@ theme:
     - navigation.expand
     - toc.integrate
 
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+  - toc:
+      toc_depth: 5
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+
 nav:
-  - Home: index.md
-  - API Reference:
-      - pyindexrepo: api_docs.md
+  - Home: 'index.md'
+  - API reference: 'api.md'

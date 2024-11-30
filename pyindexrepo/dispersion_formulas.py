@@ -26,7 +26,20 @@ def formula_1_helper(wavelength, c1, c2):
     cache=True,
 )
 def formula_1(wavelength, coefficients):
-    """Sellmeier (preferred) dispersion formula"""
+    r"""Sellmeier (preferred) dispersion formula
+
+    The formula has the general form:
+
+
+    $$
+    {n}^{2}-1={C}_{1}+\frac{{C}_{2}{\lambda }^{2}}{{\lambda }^{2}-{C}_{3}^{2}}+\frac{{C}_{4}{\lambda }^{2}}{{\lambda }^{2}-{C}_{5}^{2}}+\frac{{C}_{6}{\lambda }^{2}}{{\lambda }^{2}-{C}_{7}^{2}}+\frac{{C}_{8}{\lambda }^{2}}{{\lambda }^{2}-{C}_{9}^{2}}+\frac{{C}_{10}{\lambda }^{2}}{{\lambda }^{2}-{C}_{11}^{2}}+\frac{{C}_{12}{\lambda }^{2}}{{\lambda }^{2}-{C}_{13}^{2}}+\frac{{C}_{14}{\lambda }^{2}}{{\lambda }^{2}-{C}_{15}^{2}}+\frac{{C}_{16}{\lambda }^{2}}{{\lambda }^{2}-{C}_{17}^{2}}
+    $$
+
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
     nsq = np.ones_like(wavelength) + coefficients[0]
     for i in range(1, len(coefficients), 2):
         nsq = nsq + formula_1_helper(wavelength, coefficients[i], coefficients[i + 1])
@@ -49,7 +62,18 @@ def formula_2_helper(wavelength, c1, c2):
     cache=True,
 )
 def formula_2(wavelength, coefficients):
-    """Sellmeier-2 dispersion formula"""
+    r"""Sellmeier-2 dispersion formula.
+
+    The formula has the general form:
+
+    $$
+    {n}^{2}-1={C}_{1}+\frac{{C}_{2}{\lambda }^{2}}{{\lambda }^{2}-{C}_{3}}+\frac{{C}_{4}{\lambda }^{2}}{{\lambda }^{2}-{C}_{5}}+\frac{{C}_{6}{\lambda }^{2}}{{\lambda }^{2}-{C}_{7}}+\frac{{C}_{8}{\lambda }^{2}}{{\lambda }^{2}-{C}_{9}}+\frac{{C}_{10}{\lambda }^{2}}{{\lambda }^{2}-{C}_{11}}+\frac{{C}_{12}{\lambda }^{2}}{{\lambda }^{2}-{C}_{13}}+\frac{{C}_{14}{\lambda }^{2}}{{\lambda }^{2}-{C}_{15}}+\frac{{C}_{16}{\lambda }^{2}}{{\lambda }^{2}-{C}_{17}}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
     nsq = np.ones_like(wavelength) + coefficients[0]
     for i in range(1, len(coefficients), 2):
         nsq = nsq + formula_2_helper(wavelength, coefficients[i], coefficients[i + 1])
@@ -72,7 +96,18 @@ def formula_3457_helper(wavelength, c1, c2):
     cache=True,
 )
 def formula_3(wavelength, coefficients):
-    """Polynomial dispersion formula"""
+    r"""Polynomial dispersion formula.
+
+    The formula has the general form:
+
+    $$
+    {n}^{2}={C}_{1}+{C}_{2}{\lambda }^{{C}_{3}}+{C}_{4}{\lambda }^{{C}_{5}}+{C}_{6}{\lambda }^{{C}_{7}}+{C}_{8}{\lambda }^{{C}_{9}}+{C}_{10}{\lambda }^{{C}_{11}}+{C}_{12}{\lambda }^{{C}_{13}}+{C}_{14}{\lambda }^{{C}_{15}}+{C}_{16}{\lambda }^{{C}_{17}}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
     nsq = np.ones_like(wavelength) * coefficients[0]
     for i in range(1, len(coefficients), 2):
         nsq = nsq + formula_3457_helper(
@@ -94,7 +129,18 @@ def formula_4_helper1(wavelength, c1, c2, c3, c4):
     cache=True,
 )
 def formula_4(wavelength, coefficients):
-    """RefractiveIndex.INFO dispersion formula"""
+    r"""RefractiveIndex.INFO dispersion formula
+
+    The formula has the general form:
+
+    $$
+    {n}^{2}={C}_{1}+\frac{{C}_{2}{\lambda }^{{C}_{3}}}{{\lambda }^{2}-{C}_{4}^{{C}_{5}}}+\frac{{C}_{6}{\lambda }^{{C}_{7}}}{{\lambda }^{2}-{C}_{8}^{{C}_{9}}}+{C}_{10}{\lambda }^{{C}_{11}}+{C}_{12}{\lambda }^{{C}_{13}}+{C}_{14}{\lambda }^{{C}_{15}}+{C}_{16}{\lambda }^{{C}_{17}}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
     nsq = np.zeros_like(wavelength) + coefficients[0]
     for i in range(1, min(9, len(coefficients)), 4):
         nsq = nsq + formula_4_helper1(
@@ -120,7 +166,18 @@ def formula_4(wavelength, coefficients):
     cache=True,
 )
 def formula_5(wavelength, coefficients):
-    """Cauchy dispersion formula"""
+    r"""Cauchy dispersion formula
+
+    The formula has the general form:
+
+    $$
+    n={C}_{1}+{C}_{2}{\lambda }^{{C}_{3}}+{C}_{4}{\lambda }^{{C}_{5}}+{C}_{6}{\lambda }^{{C}_{7}}+{C}_{8}{\lambda }^{{C}_{9}}+{C}_{10}{\lambda }^{{C}_{11}}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
     n = np.zeros_like(wavelength) + coefficients[0]
     for i in range(1, len(coefficients), 2):
         n = n + formula_3457_helper(wavelength, coefficients[i], coefficients[i + 1])
@@ -148,7 +205,19 @@ def formula_6_helper(wavelength, c1, c2):
     cache=True,
 )
 def formula_6(wavelength, coefficients):
-    """Gases dispersion formula"""
+    r"""Gases dispersion formula
+
+    The formula has the general form:
+
+    $$
+    n-1={C}_{1}+\frac{{C}_{2}}{{C}_{3}-{\lambda }^{-2}}+\frac{{C}_{4}}{{C}_{5}-{\lambda }^{-2}}+\frac{{C}_{6}}{{C}_{7}-{\lambda }^{-2}}+\frac{{C}_{8}}{{C}_{9}-{\lambda }^{-2}}+\frac{{C}_{10}}{{C}_{11}-{\lambda }^{-2}}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+
+    """
     n = np.ones_like(wavelength) + coefficients[0]
     for i in range(1, len(coefficients), 2):
         n = n + formula_6_helper(wavelength, coefficients[i], coefficients[i + 1])
@@ -171,7 +240,18 @@ def formula_7_helper1(wavelength, c1, p):
     cache=True,
 )
 def formula_7(wavelength, coefficients):
-    """Herzberger dispersion formula"""
+    r"""Herzberger dispersion formula
+
+    The formula has the general form:
+
+    $$
+    n={C}_{1}+\frac{{C}_{2}}{{\lambda }^{2}-0.028}+{C}_{3}{\left(\frac{1}{{\lambda }^{2}-0.028}\right)}^{2}+{C}_{4}{\lambda }^{2}+{C}_{5}{\lambda }^{4}+{C}_{6}{\lambda }^{6}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
     n = np.zeros_like(wavelength) + coefficients[0]
     n = n + formula_7_helper1(wavelength, coefficients[1], 1)
     n = n + formula_7_helper1(wavelength, coefficients[2], 2)
@@ -188,6 +268,15 @@ def formula_7(wavelength, coefficients):
     cache=True,
 )
 def formula_8(wavelength, coefficients):
+    r"""Formula 8 dispersion formula from refractiveindex.info
+
+    The formula has the general form:
+
+    $$
+    \frac{{n}^{2}-1}{{n}^{2}+2}={C}_{1}+\frac{{C}_{2}{\lambda }^{2}}{{\lambda }^{2}-{C}_{3}}+{C}_{4}{\lambda }^{2}
+    $$
+
+    """
     return np.sqrt(
         (
             wavelength**2
@@ -216,6 +305,18 @@ def formula_8(wavelength, coefficients):
     cache=True,
 )
 def formula_9(wavelength, coefficients):
+    r"""Formula 9 dispersion formula from refractiveindex.info
+
+    The formula has the general form:
+
+    $$
+    {n}^{2}={C}_{1}+\frac{{C}_{2}}{{\lambda }^{2}-{C}_{3}}+\frac{{C}_{4}(\lambda -{C}_{5})}{{(\lambda -{C}_{5})}^{2}+{C}_{6}}
+    $$
+
+    Args:
+        wavelength: wavelength
+        coefficients: list of coefficients
+    """
     return np.sqrt(
         coefficients[0]
         + coefficients[1] / (wavelength**2 - coefficients[2])
@@ -240,7 +341,7 @@ def dn_absolute_temperature(
     """dn/dT of absolute refractive index at certain Temperature
 
     Returns the temperature coefficient of the absolute refractive index for given wavelength and temperature
-    Formula (2) of Schott TIE-19
+    Formula (2) of [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads)
 
     Args:
         n_abs_ref: absolute refractive index at reference temperature
@@ -283,7 +384,7 @@ def delta_absolute_temperature(
     """deltaT of absolute refractive index at certain Temperature
 
     Returns the temperature coefficient of the absolute refractive index for given wavelength and temperature
-    Formula (3) of Schott TIE-19
+    Formula (3) of [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads)
 
     Args:
         n_abs_ref: absolute refractive index at reference temperature
@@ -315,9 +416,8 @@ def delta_absolute_temperature(
 def n_air(wl: float | np.ndarray, T: float = 20.0, P: float = 0.10133):
     """Refractive index of air
 
-    Calculates the refractive index of air as described in Schott TIE 19:
-    Formula (8) of TIE 19
-    https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads
+    Calculates the refractive index of air as described in
+    [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads) - Formula (8):
 
     Args:
         wl: wavelength
@@ -339,9 +439,8 @@ def n_air(wl: float | np.ndarray, T: float = 20.0, P: float = 0.10133):
 def dn_dt_air(wl: float | np.ndarray, T: float, P: float):
     """Temperature coefficient dn/dT of air
 
-    Calculates the temperature dependence of the refractive index of air as given in Schott's TIE 19:
-    Formula (10) of TIE-19
-    https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads
+    Calculates the temperature dependence of the refractive index of air as given in
+    [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads) - Formula (10):
 
     Args:
         wl: wavelength
@@ -363,7 +462,7 @@ def absolute_to_relative(
 ):
     """Converts absolute refractive index to relative
 
-    Formula (5) of TIE-19
+    Formula (5) of [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads)
 
     Args:
         n_abs: absolute refractive index.
@@ -386,7 +485,7 @@ def relative_to_absolute(
 ):
     """Converts relative refractive index to absolute
 
-    Reverse of Formula (5) of TIE-19
+    Reverse of Formula (5) of [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads)
 
     Args:
         n_rel: relative refractive index
@@ -406,7 +505,7 @@ def n_absolute_with_given_dndt(
 ):
     """Calculates absolute refractive index with given dn/dT
 
-    Formula (6) of TIE-19
+    Formula (6) of [Schott TIE-19](https://www.schott.com/en-gb/products/optical-glass-p1000267/downloads)
 
     Args:
         n_rel: relative refractive index

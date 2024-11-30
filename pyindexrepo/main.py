@@ -280,24 +280,58 @@ class Material:
     specs: Specs | None = field(default=None)
     yaml_data: YAMLLibraryData = field(default=None)
 
-    def get_n(self, wavelength):
+    def get_n(self, wavelength: float | np.ndarray) -> float | np.ndarray:
+        """Get refractive index n for a given wavelength or array of wavelengths.
+
+        Args:
+            wavelength: Wavelength or array of wavelengths in micrometers.
+
+        Returns:
+            float or array of floats: Refractive index n for the given wavelength
+        """
         if self.n is None:
             warnings.warn("No n data. Returning 0")
             return np.zeros_like(wavelength)
         return self.n.get_n_or_k(wavelength)
 
-    def get_k(self, wavelength):
+    def get_k(self, wavelength: float | np.ndarray) -> float | np.ndarray:
+        """Get extinction coefficient k for a given wavelength or array of wavelengths.
+
+        Args:
+            wavelength: Wavelength or array of wavelengths in micrometers.
+
+        Returns:
+            float or array of floats: Extinction coefficient k for the given wavelength
+        """
         if self.k is None:
             warnings.warn("No k data. Returning 0")
             return np.zeros_like(wavelength)
         return self.k.get_n_or_k(wavelength)
 
-    def get_nk(self, wavelength):
+    def get_nk(self, wavelength: float | np.ndarray) -> tuple[float | np.ndarray, float | np.ndarray]:
+        """Get refractive index n and extinction coefficient k for a given wavelength or array of wavelengths.
+
+        Args:
+            wavelength: Wavelength or array of wavelengths in micrometers.
+
+        Returns:
+            tuple of floats or arrays of floats: Refractive index n and extinction coefficient k for the given wavelength
+        """
         return self.get_n(wavelength), self.get_k(wavelength)
 
     def get_n_at_temperature(
         self, wavelength: float | np.ndarray, temperature: float, P: float = 0.10133
     ) -> float | np.ndarray:
+        """Get refractive index n at a given temperature for a given wavelength or array of wavelengths.
+
+        Args:
+            wavelength: Wavelength or array of wavelengths in micrometers.
+            temperature: Temperature in degrees
+            P: Pressure in MPa. Default is 0.10133 MPa (1 atm).
+
+        Returns:
+            float or array of floats: Refractive index n at the given temperature for the given wavelength
+        """
         assert self.specs is not None, "There are no specs available for this material"
         assert self.specs.thermal_expansion is not None, (
             "There is no thermal dispersion formula available " "for this material"
@@ -390,7 +424,7 @@ class FormulaIndexData:
     def __post_init__(self):
         self.coefficients = np.array(self.coefficients, dtype=float)
 
-    def get_n_or_k(self, wavelength):
+    def get_n_or_k(self, wavelength: float | np.ndarray) -> float | np.ndarray:
         if isinstance(wavelength, float) or isinstance(wavelength, np.ndarray):
             return self.formula(wavelength, self.coefficients)
         elif isinstance(wavelength, list):
@@ -515,7 +549,14 @@ class RefractiveIndexLibrary:
             return True
 
     def _download_latest_commit(self) -> bool:
-        """Download latest library from GitHub."""
+        """Download latest library from GitHub.
+
+        Downloads the latest library from the refractiveindex.info GitHub repository
+         and extracts the necessary data files.
+
+        Returns:
+            bool: True if the library was successfully downloaded, False otherwise.
+        """
         if self._is_library_outdated() or self.force_upgrade:
             logger.info("New Library available... Downloading...")
             zip_url = "https://api.github.com/repos/polyanskiy/refractiveindex.info-database/zipball"
@@ -550,30 +591,42 @@ class RefractiveIndexLibrary:
             return False
 
     def _load_from_yaml(self):
+        """Load data from yaml file for internal use
+
+        Returns:
+            None
+        """
         logger.info("load from yaml")
         with open(self.path_to_library) as f:
             yaml_data = yaml.safe_load(f)
 
-        for s in yaml_data:
-            for book in s["content"]:
-                if "BOOK" in book:
+            for s in yaml_data:
+                for book in s["content"]:
+                    if "BOOK" not in book:
+                        continue
                     for page in book["content"]:
-                        if "PAGE" in page:
-                            # fill yaml list
-                            self.materials_yaml.append(
-                                YAMLLibraryData(
-                                    name=page["name"],
-                                    lib_page=page["PAGE"],
-                                    lib_book=book["BOOK"],
-                                    lib_shelf=s["SHELF"],
-                                    lib_data=page["data"],
-                                    lib_path=self.path_to_library.parent.joinpath(
-                                        "data-nk"
-                                    ).joinpath(page["data"]),
-                                )
+                        if "PAGE" not in page:
+                            continue
+                        # fill yaml list
+                        self.materials_yaml.append(
+                            YAMLLibraryData(
+                                name=page["name"],
+                                lib_page=page["PAGE"],
+                                lib_book=book["BOOK"],
+                                lib_shelf=s["SHELF"],
+                                lib_data=page["data"],
+                                lib_path=self.path_to_library.parent.joinpath(
+                                    "data-nk"
+                                ).joinpath(page["data"]),
                             )
+                        )
 
     def _convert_to_material_dict(self):
+        """Convert yaml data to Material objects
+
+        Returns:
+            None
+        """
         for m in self.materials_yaml:
             # try to load material from yaml
             mat = yaml_to_material(self.path_to_library.parent.joinpath("data-nk").joinpath(m.lib_data), m.lib_shelf,
@@ -631,8 +684,9 @@ class RefractiveIndexLibrary:
         or None if it doesn't find a match.
 
         Args:
-            page_name:
-            exact_match:
+            page_name: name of the material as given as page name on refractiveindex.info
+            exact_match: if True, only exact matches are considered. Default is False. e.g. if False,
+            'BK7' will return all BK7 glasses, including N-BK7, K-BK7, etc.
 
         Returns:
             Material or list of Materials matching the Name

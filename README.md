@@ -1,8 +1,8 @@
-![PyPI - Version](https://img.shields.io/pypi/v/PyIndexRepo)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/PyIndexRepo)
+[![PyPI - Version](https://img.shields.io/pypi/v/PyIndexRepo)](https://pypi.org/project/PyIndexRepo/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/PyIndexRepo)](https://pypi.org/project/PyIndexRepo/)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Stuermer/PyIndexRepo/tests.yaml?label=pytest)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Stuermer/PyIndexRepo/docs.yaml?label=mkdocs&link=https%3A%2F%2Fstuermer.github.io%2FPyIndexRepo%2F)
-
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Stuermer/PyIndexRepo/docs.yaml?label=mkdocs&link=https%3A%2F%2Fstuermer.github.io%2FPyIndexRepo%2F)](https://stuermer.github.io/PyIndexRepo/)
+[![Coverage Status](https://coveralls.io/repos/github/Stuermer/PyIndexRepo/badge.svg?branch=master)](https://coveralls.io/github/Stuermer/PyIndexRepo?branch=master)
 
 
 # PyIndexRepo

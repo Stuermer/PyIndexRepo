@@ -7,7 +7,7 @@ from pyindexrepo.dispersion_formulas import n_air
 
 @pytest.fixture(scope="session")
 def db():
-    db = RefractiveIndexLibrary(force_upgrade=True, auto_upgrade=True)
+    db = RefractiveIndexLibrary(force_upgrade=False, auto_upgrade=True)
     assert len(db.materials_yaml) > 0
     return db
 

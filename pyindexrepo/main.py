@@ -903,10 +903,10 @@ def yaml_to_material(
                 k_class = TabulatedIndexData(wl_k, k, True, True)
 
             # fill additional spec data if present
-            specs = d.get("SPECS", None)
-            if specs is not None:
-                logger.debug(specs)
-                specs = Specs.read_specs_from_yaml(specs)
+            try:
+                specs = Specs.read_specs_from_yaml(d["SPECS"])
+            except:
+                specs = None
         except ScannerError:
             logger.warning(f"Could not read data in {filepath}")
             return None

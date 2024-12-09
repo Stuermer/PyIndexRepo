@@ -287,6 +287,14 @@ None if unspecified.</p>
 None if unspecified.</p>
               </div>
             </li>
+            <li>
+              <b><code>name</code></b>
+                  (<code>str</code>)
+              –
+              <div class="doc-md-description">
+                <p>The name of the material. Normally extracted from the YAML data, but can be overridden. Empty string if unspecified.</p>
+              </div>
+            </li>
         </ul>
       </td>
     </tr>
@@ -313,12 +321,14 @@ class Material:
             None if unspecified.
         yaml_data (YAMLLibraryData, optional): An instance of the YAMLLibraryData class representing YAML library data.
             None if unspecified.
+        name (str, optional): The name of the material. Normally extracted from the YAML data, but can be overridden. Empty string if unspecified.
     """
 
     n: TabulatedIndexData | FormulaIndexData | None = field(default=None)
     k: TabulatedIndexData | FormulaIndexData | None = field(default=None)
     specs: Specs | None = field(default=None)
     yaml_data: YAMLLibraryData = field(default=None)
+    name: str = field(default=yaml_data.name if yaml_data else "")
 
     def get_n(self, wavelength: float | np.ndarray) -&gt; float | np.ndarray:
         """Get refractive index n for a given wavelength or array of wavelengths.
@@ -405,10 +415,10 @@ class Material:
             )
 
     def __str__(self):
-        return self.yaml_data.name
+        return self.name
 
     def __repr__(self):
-        return self.yaml_data.name</code></pre>
+        return self.name</code></pre>
               </details>
 
 
@@ -2873,6 +2883,9 @@ class YAMLRefractiveIndexData:
                     wl_max_n,
                 )
             elif n is not None:
+                wl_n *= 1000.  # convert to nm
+                wl_min_n *= 1000.
+                wl_max_n *= 1000.
                 n_class = TabulatedIndexData(wl_n, n, True, True)
 
             (
@@ -2892,6 +2905,9 @@ class YAMLRefractiveIndexData:
                     wl_max_k,
                 )
             elif k is not None:
+                wl_k *= 1000.  # convert to nm
+                wl_min_k *= 1000.
+                wl_max_k *= 1000.
                 k_class = TabulatedIndexData(wl_k, k, True, True)
 
             # fill additional spec data if present

@@ -883,9 +883,6 @@ def yaml_to_material(
                     wl_max_n,
                 )
             elif n is not None:
-                wl_n *= 1000.  # convert to nm
-                wl_min_n *= 1000.
-                wl_max_n *= 1000.
                 n_class = TabulatedIndexData(wl_n, n, True, True)
 
             (
@@ -905,9 +902,6 @@ def yaml_to_material(
                     wl_max_k,
                 )
             elif k is not None:
-                wl_k *= 1000.  # convert to nm
-                wl_min_k *= 1000.
-                wl_max_k *= 1000.
                 k_class = TabulatedIndexData(wl_k, k, True, True)
 
             # fill additional spec data if present

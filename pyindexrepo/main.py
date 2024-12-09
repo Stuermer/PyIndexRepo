@@ -273,12 +273,14 @@ class Material:
             None if unspecified.
         yaml_data (YAMLLibraryData, optional): An instance of the YAMLLibraryData class representing YAML library data.
             None if unspecified.
+        name (str, optional): The name of the material. Normally extracted from the YAML data, but can be overridden. Empty string if unspecified.
     """
 
     n: TabulatedIndexData | FormulaIndexData | None = field(default=None)
     k: TabulatedIndexData | FormulaIndexData | None = field(default=None)
     specs: Specs | None = field(default=None)
     yaml_data: YAMLLibraryData = field(default=None)
+    name: str = field(default=yaml_data.name if yaml_data else "")
 
     def get_n(self, wavelength: float | np.ndarray) -> float | np.ndarray:
         """Get refractive index n for a given wavelength or array of wavelengths.
@@ -365,10 +367,10 @@ class Material:
             )
 
     def __str__(self):
-        return self.yaml_data.name
+        return self.name
 
     def __repr__(self):
-        return self.yaml_data.name
+        return self.name
 
 
 @dataclass
@@ -881,6 +883,9 @@ def yaml_to_material(
                     wl_max_n,
                 )
             elif n is not None:
+                wl_n *= 1000.  # convert to nm
+                wl_min_n *= 1000.
+                wl_max_n *= 1000.
                 n_class = TabulatedIndexData(wl_n, n, True, True)
 
             (
@@ -900,6 +905,9 @@ def yaml_to_material(
                     wl_max_k,
                 )
             elif k is not None:
+                wl_k *= 1000.  # convert to nm
+                wl_min_k *= 1000.
+                wl_max_k *= 1000.
                 k_class = TabulatedIndexData(wl_k, k, True, True)
 
             # fill additional spec data if present
@@ -925,12 +933,20 @@ def yaml_to_material(
 
 
 def fit_tabulated(
-    tid: TabulatedIndexData, formula: callable, coefficients: list | np.ndarray
+        tid: TabulatedIndexData, formula: callable, coefficients: list | np.ndarray, debug: bool = False
 ) -> FormulaIndexData:
     from scipy.optimize import least_squares
 
     def fit_func(x, wl, n):
-        return formula(wl, *x) - n
+        return formula(wl, x) - n
 
-    res = least_squares(fit_func, coefficients, args=(tid.wl, tid.n_or_k))
+    res = least_squares(fit_func, coefficients, args=(np.array(tid.wl), np.array(tid.n_or_k)))
+    if debug:
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.scatter(tid.wl, tid.n_or_k, label="data")
+        wl = np.linspace(min(tid.wl), max(tid.wl), 1000)
+        plt.plot(wl, formula(wl, res.x), label="fit")
+        plt.legend()
+        plt.show()
     return FormulaIndexData(formula, res.x)

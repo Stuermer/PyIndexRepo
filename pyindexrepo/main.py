@@ -155,10 +155,13 @@ class Specs:
             for tr_dict in specs_dict["thermal_expansion"]:
                 if isinstance(tr_dict, dict):
                     if tr_dict.get("temperature_range"):
-                        tr = TemperatureRange(
-                            tr_dict["temperature_range"][0],
-                            tr_dict["temperature_range"][1],
-                        )
+                        try:
+                            min, max = tr_dict["temperature_range"].split()
+                            tr = TemperatureRange(
+                                min=float(min), max=float(max)
+                            )
+                        except ValueError:
+                            tr = None
                     else:
                         tr = None
                 else:
@@ -338,12 +341,13 @@ class Material:
         assert self.specs.thermal_expansion is not None, (
             "There is no thermal dispersion formula available " "for this material"
         )
+
         if self.specs.wavelength_is_vacuum:
             n_abs = self.get_n(wavelength)
             return n_abs + self.specs.thermal_dispersion.delta_n_abs(
                 n_abs,
                 wavelength,
-                temperature - self.specs.temperature,
+                temperature - self.specs.temperature + 273.15,
                 self.specs.thermal_dispersion.coefficients,
             )
         else:
@@ -354,12 +358,12 @@ class Material:
             )
             n_rel = self.get_n(rel_wavelength)
             n_abs = dispersion_formulas.relative_to_absolute(
-                n_rel, rel_wavelength, self.specs.temperature, 0.10133
+                n_rel, rel_wavelength, self.specs.temperature - 273.15, 0.10133
             )
             n_abs += self.specs.thermal_dispersion.delta_n_abs(
                 n_abs,
                 rel_wavelength,
-                temperature - self.specs.temperature,
+                temperature - self.specs.temperature + 273.15,
                 *self.specs.thermal_dispersion.coefficients,
             )
             return dispersion_formulas.absolute_to_relative(

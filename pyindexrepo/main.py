@@ -14,10 +14,9 @@ from typing import List
 import numpy as np
 import requests as requests
 import yaml
+from pyindexrepo import dispersion_formulas
 from scipy.interpolate import interp1d
 from yaml.scanner import ScannerError
-
-from pyindexrepo import dispersion_formulas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("RefractiveIndex")
@@ -47,7 +46,7 @@ class ThermalDispersion:
     delta_n_abs: callable = field(init=False)
 
     def __post_init__(self):
-        if self.formula_type == "Schott formula":
+        if self.formula_type in ["Schott formula", "formula A"]:
             self.delta_n_abs = getattr(
                 dispersion_formulas, "delta_absolute_temperature"
             )
@@ -121,7 +120,7 @@ class Specs:
         thermal_dispersion_list = []
         if "thermal_dispersion" in specs_dict:
             for td_dict in specs_dict["thermal_dispersion"]:
-                if td_dict.get("type") == "Schott formula":
+                if td_dict.get("type") in ["Schott formula", "formula A"]:
                     td = ThermalDispersion(
                         formula_type=td_dict["type"],
                         coefficients=(
@@ -188,6 +187,18 @@ class Specs:
                 warnings.warn(
                     f"Temperature is not a string or an integer/float. {temperature}"
                 )
+        density = specs_dict.get("density")
+        if density is not None:
+            if isinstance(density, str):
+                density = float(density.replace(" g/cm<sup>3</sup>", ""))
+            elif isinstance(density, int):
+                density = float(density)
+            elif isinstance(density, float):
+                pass
+            else:
+                warnings.warn(
+                    f"Density is not a string. {density}. Assuming float or None."
+                )
         # Create Specs dataclass instance
         specs = Specs(
             n_is_absolute=specs_dict.get("n_is_absolute"),
@@ -200,11 +211,7 @@ class Specs:
             Vd=specs_dict.get("Vd"),
             glass_code=specs_dict.get("glass_code"),
             glass_status=specs_dict.get("glass_status"),
-            density=(
-                float(specs_dict.get("density").replace(" g/cm<sup>3</sup>", ""))
-                if specs_dict.get("density")
-                else None
-            ),
+            density=density,
             thermal_expansion=(
                 [
                     ThermalExpansion(
@@ -383,7 +390,7 @@ class TabulatedIndexData:
     A dataclass representing tabulated index data.
 
     Attributes:
-        wl (np.ndarray | list[float]): An array or list containing wavelength values (in nm).
+        wl (np.ndarray | list[float]): An array or list containing wavelength values (in microns).
         n_or_k (np.ndarray | list[float]): An array or list containing refractive index (n) or extinction coefficient (k) values.
         ip (callable, read-only): A callable property to perform interpolation on the data.
         use_interpolation (bool, optional): Indicates whether to use interpolation when querying values.
@@ -418,8 +425,8 @@ class FormulaIndexData:
     Attributes:
         formula (callable): A callable function that computes the refractive index (n) or extinction coefficient (k) for a given wavelength.
         coefficients (np.array): An array of coefficients required by the formula function.
-        min_wl (float, optional): The minimum wavelength (in nm) for which the formula is valid. Default is negative infinity.
-        max_wl (float, optional): The maximum wavelength (in nm) for which the formula is valid. Default is positive infinity.
+        min_wl (float, optional): The minimum wavelength (in microns) for which the formula is valid. Default is negative infinity.
+        max_wl (float, optional): The maximum wavelength (in microns) for which the formula is valid. Default is positive infinity.
     """
 
     formula: callable
@@ -888,6 +895,8 @@ def yaml_to_material(
                 )
             elif n is not None:
                 n_class = TabulatedIndexData(wl_n, n, True, True)
+                if k is not None:
+                    k_class = TabulatedIndexData(wl_n, k, True, True)
 
             (
                 wl_k,
@@ -938,7 +947,7 @@ def fit_tabulated(
     def fit_func(x, wl, n):
         return formula(wl, x) - n
 
-    res = least_squares(fit_func, coefficients, args=(np.array(tid.wl), np.array(tid.n_or_k)))
+    res = least_squares(fit_func, coefficients, args=(np.array(tid.wl, dtype=float), np.array(tid.n_or_k, dtype=float)))
     if debug:
         import matplotlib.pyplot as plt
         plt.figure()

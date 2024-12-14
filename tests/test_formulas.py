@@ -93,6 +93,11 @@ def test_n_at_temperature(db):
     assert bk7.get_n(0.55) == pytest.approx(bk7.get_n_at_temperature(0.55, 20))
 
 
+def test_silver(db):
+    silver = db.get_material("main", "Ag", "Ciesielski")
+    assert silver.get_n(0.5) == pytest.approx(0.083000, 1e-5)
+    assert silver.get_k(0.5) == pytest.approx(2.8180, 1e-5)
+
 def test_different_datatypes(db):
     bk7 = db.get_material("glass", "SCHOTT-BK", "N-BK7")
     res = bk7.get_k(0.5)

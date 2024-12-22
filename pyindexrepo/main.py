@@ -380,22 +380,6 @@ class Material:
     def __repr__(self):
         return self.name
 
-    def __getstate__(self):
-        return {
-            "n": self.n,
-            "k": self.k,
-            "specs": self.specs,
-            "yaml_data": self.yaml_data,
-            "name": self.name,
-        }
-
-    def __setstate__(self, state):
-        self.n = state["n"]
-        self.k = state["k"]
-        self.specs = state["specs"]
-        self.yaml_data = state["yaml_data"]
-        self.name = state["name"]
-
 
 @dataclass
 class TabulatedIndexData:
@@ -437,20 +421,6 @@ class TabulatedIndexData:
     def get_n_or_k(self, wavelength):
         return self.ip(wavelength)
 
-    def __getstate__(self):
-        return {
-            "wl": self.wl,
-            "n_or_k": self.n_or_k,
-            "interpolation_func": self.interpolation_func,
-            "bounds_error": self.bounds_error,
-        }
-
-    def __setstate__(self, state):
-        self.wl = state["wl"]
-        self.n_or_k = state["n_or_k"]
-        self.interpolation_func = state["interpolation_func"]
-        self.bounds_error = state["bounds_error"]
-        self.__post_init__()
 
 @dataclass
 class FormulaIndexData:
@@ -482,19 +452,6 @@ class FormulaIndexData:
         else:
             raise ValueError(f"The datatype {type(wavelength)} is not supported.")
 
-    def __getstate__(self):
-        return {
-            "formula": self.formula.__name__,
-            "coefficients": self.coefficients,
-            "min_wl": self.min_wl,
-            "max_wl": self.max_wl,
-        }
-
-    def __setstate__(self, state):
-        self.formula = getattr(dispersion_formulas, state["formula"])
-        self.coefficients = state["coefficients"]
-        self.min_wl = state["min_wl"]
-        self.max_wl = state["max_wl"]
 
 @dataclass
 class YAMLRefractiveIndexData:
@@ -555,28 +512,6 @@ class YAMLLibraryData:
             f"{self.lib_data}, "
             f"{self.lib_path}"
         )
-
-    def __getstate__(self):
-        return {
-            "name": self.name,
-            "lib_data": self.lib_data,
-            "lib_shelf": self.lib_shelf,
-            "lib_book": self.lib_book,
-            "lib_page": self.lib_page,
-            "lib_path": self.lib_path,
-        }
-
-    def __setstate__(self, state):
-        self.name = state["name"]
-        self.lib_data = state["lib_data"]
-        self.lib_shelf = state["lib_shelf"]
-        self.lib_book = state["lib_book"]
-        self.lib_page = state["lib_page"]
-        self.lib_path = state["lib_path"]
-
-    def __repr__(self):
-        return self.__str__()
-
 
 
 @dataclass
@@ -682,7 +617,7 @@ class RefractiveIndexLibrary:
             None
         """
         logger.info("load from yaml")
-        with open(self.path_to_library) as f:
+        with open(self.path_to_library, encoding='utf-8') as f:
             yaml_data = yaml.safe_load(f)
 
             for s in yaml_data:
@@ -716,7 +651,7 @@ class RefractiveIndexLibrary:
             if mat:
                 # add material to dict, use shelf, book and page as keys
                 self.materials_dict.setdefault(m.lib_shelf, {}).setdefault(m.lib_book, {})[m.lib_page] = mat
-
+                self.materials_list.append(mat)
                 # Save each material to a separate pickle file
                 material_pickle_path = self.path_to_library.parent.joinpath(
                     f"pickled/{m.lib_shelf}_{m.lib_book}_{m.lib_page}.pkl")
@@ -798,17 +733,14 @@ class RefractiveIndexLibrary:
                         warnings.warn("Unknown material type.")
         else:
             for m in self.materials_list:
-                if page_name in m.yaml_data.name:
-                    if isinstance(m, Material):
+                if isinstance(m, YAMLLibraryData):
+                    if page_name in m.name:
+                        materials.append(self.get_material(m.lib_shelf, m.lib_book, m.lib_page))
+                elif isinstance(m, Material):
+                    if page_name in m.yaml_data.name:
                         materials.append(m)
-                    elif isinstance(m, YAMLLibraryData):
-                        # replace yaml data with material object
-                        tmp = self.get_material(m.lib_shelf, m.lib_book, m.lib_page)
-                        if tmp:
-                            m = tmp
-                            materials.append(m)
-                    else:
-                        warnings.warn("Unknown material type.")
+                else:
+                    warnings.warn("Unknown material type.")
         return (
             materials[0]
             if len(materials) == 1
@@ -987,7 +919,7 @@ Returns:
         return _wl, _wl_min, _wl_max, _n, _k, _coefficients, _formula
 
     try:
-        with open(filepath) as f:
+        with open(filepath, encoding='utf-8') as f:
             yaml_content = f.read()  # Read the file once
             # yaml_parser = YAML()
             d = yaml.safe_load(yaml_content)  # Parse the YAML content

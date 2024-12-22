@@ -2,21 +2,22 @@ from __future__ import annotations
 
 import logging
 import pickle
-import time
 import warnings
 import zipfile
 from collections import namedtuple
 from dataclasses import dataclass, field
-from logging import warning
 from pathlib import Path
 from typing import List
 
 import numpy as np
 import requests as requests
 import yaml
-from pyindexrepo import dispersion_formulas
 from scipy.interpolate import interp1d
 from yaml.scanner import ScannerError
+
+from pyindexrepo import dispersion_formulas
+
+# from ruamel.yaml import YAML
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("RefractiveIndex")
@@ -115,128 +116,124 @@ class Specs:
     phosphate_resistance: float | None = None
 
     @staticmethod
-    def read_specs_from_yaml(specs_dict):
-        # Parse ThermalDispersion objects
-        thermal_dispersion_list = []
-        if "thermal_dispersion" in specs_dict:
-            for td_dict in specs_dict["thermal_dispersion"]:
-                if td_dict.get("type") in ["Schott formula", "formula A"]:
-                    td = ThermalDispersion(
-                        formula_type=td_dict["type"],
-                        coefficients=(
-                            np.array(
-                                [float(val) for val in td_dict["coefficients"].split()],
-                                dtype=float,
-                            )
-                            if td_dict.get("coefficients")
-                            else None
-                        ),
-                    )
-                elif td_dict.get("type") == "dn/dT":
-                    td = ThermalDispersion(
-                        formula_type=td_dict["type"],
-                        coefficients=float(td_dict["value"].split()[0]),
-                    )
-                else:
-                    td = None
-                    warning(
-                        f"Thermal Dispersion formula {td_dict.get('type')} not implemented yet"
-                    )
-                thermal_dispersion_list.append(td)
-        if len(thermal_dispersion_list) > 1:
-            warnings.warn(
-                "There are multiple values given for the thermal dispersion. This is not supported at the moment."
-            )
+    def parse_float(value, default=None):
+        """Convert value to float if possible, otherwise return default."""
+        try:
+            if isinstance(value, (int, float)):
+                return float(value)
+            elif isinstance(value, str):
+                return float(value.split()[0])
+        except (ValueError, AttributeError):
+            pass
+        return default
 
-        # Parse TemperatureRange objects
-        temperature_range_list = []
-        if "thermal_expansion" in specs_dict:
-            for tr_dict in specs_dict["thermal_expansion"]:
-                if isinstance(tr_dict, dict):
-                    if tr_dict.get("temperature_range"):
-                        try:
-                            min, max = tr_dict["temperature_range"].split()
-                            tr = TemperatureRange(
-                                min=float(min), max=float(max)
-                            )
-                        except ValueError:
-                            tr = None
-                    else:
-                        tr = None
-                else:
-                    tr = None
-                temperature_range_list.append(tr)
-        temperature = specs_dict.get("temperature")
-        if temperature is not None:
-            if isinstance(temperature, str):
-                # if in Kelvin, convert to Celsius
-                if "K" in temperature:
-                    temperature = float(temperature.split()[0]) - 273.15
-                elif "C" in temperature:
-                    temperature = float(temperature.split()[0])
-                else:
-                    temperature = float(temperature.split()[0]) - 273.15
-                    warnings.warn(
-                        "Temperature unit not recognized or given. Assuming Kelvin."
-                    )
-            elif isinstance(temperature, int):
-                temperature = float(temperature)
-            elif isinstance(temperature, float):
-                pass
+    @staticmethod
+    def parse_coefficients(coefficients):
+        """Parse coefficients string into a numpy array."""
+        if not coefficients:
+            return None
+        try:
+            return np.array([float(val) for val in coefficients.split()], dtype=float)
+        except (ValueError, AttributeError):
+            return None
+
+    @staticmethod
+    def parse_temperature(temperature):
+        """Parse temperature string to Celsius."""
+        if isinstance(temperature, str):
+            if "K" in temperature:
+                return float(temperature.split()[0]) - 273.15
+            elif "C" in temperature:
+                return float(temperature.split()[0])
             else:
-                warnings.warn(
-                    f"Temperature is not a string or an integer/float. {temperature}"
+                warnings.warn("Temperature unit not recognized. Assuming Kelvin.")
+                return float(temperature.split()[0]) - 273.15
+        return Specs.parse_float(temperature)
+
+    @staticmethod
+    def parse_density(density):
+        """Parse density string to float."""
+        if isinstance(density, str):
+            return Specs.parse_float(density.replace(" g/cm<sup>3</sup>", ""))
+        return Specs.parse_float(density)
+
+    @staticmethod
+    def parse_thermal_dispersion(td_dict):
+        """Parse a ThermalDispersion object from dictionary."""
+        formula_type = td_dict.get("type")
+        if formula_type in ["Schott formula", "formula A"]:
+            coefficients = Specs.parse_coefficients(td_dict.get("coefficients"))
+            return ThermalDispersion(formula_type=formula_type, coefficients=coefficients)
+        elif formula_type == "dn/dT":
+            value = Specs.parse_float(td_dict.get("value"))
+            return ThermalDispersion(formula_type=formula_type, coefficients=value)
+        else:
+            warnings.warn(f"Thermal Dispersion formula {formula_type} not implemented yet.")
+            return None
+
+    @staticmethod
+    def parse_temperature_range(tr_dict):
+        """Parse a TemperatureRange object from dictionary."""
+        if not tr_dict or "temperature_range" not in tr_dict:
+            return None
+        try:
+            min_temp, max_temp = map(float, tr_dict["temperature_range"].split())
+            return TemperatureRange(min=min_temp, max=max_temp)
+        except (ValueError, AttributeError):
+            return None
+
+    @staticmethod
+    def read_specs_from_yaml(specs_dict):
+        """Read specs from a YAML dictionary and create a Specs object."""
+        # Thermal Dispersion
+        thermal_dispersion_list = [
+            Specs.parse_thermal_dispersion(td)
+            for td in specs_dict.get("thermal_dispersion", [])
+        ]
+        if len(thermal_dispersion_list) > 1:
+            warnings.warn("Multiple thermal dispersion values found. Only the first will be used.")
+
+        # Temperature Range
+        temperature_range_list = [
+            Specs.parse_temperature_range(tr)
+            for tr in specs_dict.get("thermal_expansion", [])
+        ]
+
+        # Temperature
+        temperature = Specs.parse_temperature(specs_dict.get("temperature"))
+
+        # Density
+        density = Specs.parse_density(specs_dict.get("density"))
+
+        # Thermal Expansion
+        thermal_expansion = None
+        if specs_dict.get("thermal_expansion"):
+            thermal_expansion = [
+                ThermalExpansion(
+                    temperature_range=tr,
+                    coefficient=Specs.parse_float(te_dict.get("coefficient") or te_dict.get("value"))
                 )
-        density = specs_dict.get("density")
-        if density is not None:
-            if isinstance(density, str):
-                density = float(density.replace(" g/cm<sup>3</sup>", ""))
-            elif isinstance(density, int):
-                density = float(density)
-            elif isinstance(density, float):
-                pass
-            else:
-                warnings.warn(
-                    f"Density is not a string. {density}. Assuming float or None."
-                )
-        # Create Specs dataclass instance
-        specs = Specs(
+                for tr, te_dict in zip(temperature_range_list, specs_dict["thermal_expansion"])
+            ]
+
+        # Create Specs object
+        return Specs(
             n_is_absolute=specs_dict.get("n_is_absolute"),
             wavelength_is_vacuum=specs_dict.get("wavelength_is_vacuum"),
             temperature=temperature,
-            thermal_dispersion=(
-                thermal_dispersion_list[0] if thermal_dispersion_list else None
-            ),
+            thermal_dispersion=thermal_dispersion_list[0] if thermal_dispersion_list else None,
             nd=specs_dict.get("nd"),
             Vd=specs_dict.get("Vd"),
             glass_code=specs_dict.get("glass_code"),
             glass_status=specs_dict.get("glass_status"),
             density=density,
-            thermal_expansion=(
-                [
-                    ThermalExpansion(
-                        temperature_range=tr,
-                        coefficient=(
-                            te_dict.get("coefficient") or te_dict.get("value")
-                            if isinstance(te_dict, dict)
-                            else None
-                        ),
-                    )
-                    for tr, te_dict in zip(
-                    temperature_range_list, specs_dict["thermal_expansion"]
-                )
-                ]
-                if specs_dict.get("thermal_expansion")
-                else None
-            ),
+            thermal_expansion=thermal_expansion,
             climatic_resistance=specs_dict.get("climatic_resistance"),
             stain_resistance=specs_dict.get("stain_resistance"),
             acid_resistance=specs_dict.get("acid_resistance"),
             alkali_resistance=specs_dict.get("alkali_resistance"),
             phosphate_resistance=specs_dict.get("phosphate_resistance"),
         )
-
-        return specs
 
     def get_coefficient_of_thermal_expansion(self, temperature: float) -> float:
         """Returns the coefficient of thermal expansion for a given temperature."""
@@ -393,8 +390,7 @@ class TabulatedIndexData:
         wl (np.ndarray | list[float]): An array or list containing wavelength values (in microns).
         n_or_k (np.ndarray | list[float]): An array or list containing refractive index (n) or extinction coefficient (k) values.
         ip (callable, read-only): A callable property to perform interpolation on the data.
-        use_interpolation (bool, optional): Indicates whether to use interpolation when querying values.
-            True to use interpolation, False to disable interpolation. Default is True.
+        interpolation_func (str, optional): Indicates what interpolation function to use. Default is 'interp1d'. Can also be 'spline'.
         bounds_error (bool, optional): Indicates whether to raise an error for out-of-bounds queries.
             True to raise an error, False to suppress errors. Default is True.
     """
@@ -402,16 +398,25 @@ class TabulatedIndexData:
     wl: np.ndarray | list[float]
     n_or_k: np.ndarray | list[float]
     ip: callable = field(init=False)
-    use_interpolation: bool = field(default=True)
+    interpolation_func: str = field(default="interp1d")
     bounds_error: bool = field(default=True)
 
     def __post_init__(self):
-        if self.use_interpolation:
+        if self.interpolation_func == 'interp1d':
             self.ip = interp1d(
                 np.atleast_1d(self.wl),
                 np.atleast_1d(self.n_or_k),
                 bounds_error=self.bounds_error,
             )
+        elif self.interpolation_func == 'spline':
+            self.ip = interp1d(
+                np.atleast_1d(self.wl),
+                np.atleast_1d(self.n_or_k),
+                kind='cubic',
+                bounds_error=self.bounds_error,
+            )
+        else:
+            raise ValueError(f"Interpolation function {self.interpolation_func} not supported.")
 
     def get_n_or_k(self, wavelength):
         return self.ip(wavelength)
@@ -429,13 +434,15 @@ class FormulaIndexData:
         max_wl (float, optional): The maximum wavelength (in microns) for which the formula is valid. Default is positive infinity.
     """
 
-    formula: callable
+    formula: callable | str
     coefficients: np.array
     min_wl: float = field(default=-np.inf)
     max_wl: float = field(default=np.inf)
 
     def __post_init__(self):
         self.coefficients = np.array(self.coefficients, dtype=float)
+        if isinstance(self.formula, str):
+            self.formula = getattr(dispersion_formulas, self.formula)
 
     def get_n_or_k(self, wavelength: float | np.ndarray) -> float | np.ndarray:
         if isinstance(wavelength, float) or isinstance(wavelength, np.ndarray):
@@ -533,10 +540,10 @@ class RefractiveIndexLibrary:
     auto_upgrade: bool = field(default=False)
     force_upgrade: bool = field(default=False)
     materials_yaml: list[YAMLLibraryData] = field(default_factory=list, init=False)
-    materials_dict: dict[str, dict[str, dict[str, Material]]] = field(
+    materials_dict: dict[str, dict[str, dict[str, Material | YAMLLibraryData]]] = field(
         default_factory=dict, init=False
     )
-    materials_list: list[Material] = field(default_factory=list, init=False)
+    materials_list: list[Material | YAMLLibraryData] = field(default_factory=list, init=False)
     github_sha: str = field(default="", init=False)
 
     def _is_library_outdated(self) -> bool:
@@ -610,17 +617,16 @@ class RefractiveIndexLibrary:
             None
         """
         logger.info("load from yaml")
-        with open(self.path_to_library) as f:
+        with open(self.path_to_library, encoding='utf-8') as f:
             yaml_data = yaml.safe_load(f)
 
             for s in yaml_data:
-                for book in s["content"]:
+                for book in s.get("content", []):
                     if "BOOK" not in book:
                         continue
-                    for page in book["content"]:
+                    for page in book.get("content", []):
                         if "PAGE" not in page:
                             continue
-                        # fill yaml list
                         self.materials_yaml.append(
                             YAMLLibraryData(
                                 name=page["name"],
@@ -628,9 +634,7 @@ class RefractiveIndexLibrary:
                                 lib_book=book["BOOK"],
                                 lib_shelf=s["SHELF"],
                                 lib_data=page["data"],
-                                lib_path=self.path_to_library.parent.joinpath(
-                                    "data-nk"
-                                ).joinpath(page["data"]),
+                                lib_path=self.path_to_library.parent.joinpath("data-nk", page["data"]),
                             )
                         )
 
@@ -646,35 +650,42 @@ class RefractiveIndexLibrary:
                                    m.lib_book, m.lib_page, m.name)
             if mat:
                 # add material to dict, use shelf, book and page as keys
-                self.materials_dict.setdefault(m.lib_shelf, {}).setdefault(m.lib_book, {}).update({m.lib_page: mat})
-
-                self.materials_list.append(self.materials_dict[m.lib_shelf][m.lib_book][m.lib_page])
+                self.materials_dict.setdefault(m.lib_shelf, {}).setdefault(m.lib_book, {})[m.lib_page] = mat
+                self.materials_list.append(mat)
+                # Save each material to a separate pickle file
+                material_pickle_path = self.path_to_library.parent.joinpath(
+                    f"pickled/{m.lib_shelf}_{m.lib_book}_{m.lib_page}.pkl")
+                # create pickled folder if it doesn't exist
+                if not material_pickle_path.parent.is_dir():
+                    material_pickle_path.parent.mkdir()
+                with open(material_pickle_path, "wb") as f:
+                    pickle.dump(mat, f, pickle.HIGHEST_PROTOCOL)
 
         with open(self.path_to_library.with_suffix(".pickle"), "wb") as f:
             pickle.dump(self.materials_yaml, f, pickle.HIGHEST_PROTOCOL)
-        with open(self.path_to_library.with_suffix(".pickle2"), "wb") as f:
-            pickle.dump(self.materials_dict, f, pickle.HIGHEST_PROTOCOL)
+        # with open(self.path_to_library.with_suffix(".pickle2"), "wb") as f:
+        #     pickle.dump(self.materials_dict, f, pickle.HIGHEST_PROTOCOL)
 
     def _load_from_pickle(self):
         logger.info("load from pickle")
-        t1 = time.time()
         with open(self.path_to_library.with_suffix(".pickle"), "rb") as f:
             self.materials_yaml = pickle.load(f)
-        with open(self.path_to_library.with_suffix(".pickle2"), "rb") as f:
-            self.materials_dict = pickle.load(f)
-
-        for sd in self.materials_dict.values():
-            for bd in sd.values():
-                for mat in bd.values():
-                    self.materials_list.append(mat)
-        logger.info(f"... done after{t1-time.time()}s")
+        for m in self.materials_yaml:
+            self.materials_dict.setdefault(m.lib_shelf, {}).setdefault(m.lib_book, {})[m.lib_page] = m
+            self.materials_list.append(m)
+        #
+        # for sd in self.materials_dict.values():
+        #     for bd in sd.values():
+        #         for mat in bd.values():
+        #             self.materials_list.append(mat)
+        logger.info("... done.")
 
     def __post_init__(self):
         upgraded = False
         # create database folder if it doesn't exist
         if not self.path_to_library.parent.is_dir():
             self.path_to_library.parent.mkdir()
-        if self.auto_upgrade or self.force_upgrade:
+        if self.auto_upgrade or self.force_upgrade or not any(self.path_to_library.parent.iterdir()):
             upgraded = self._download_latest_commit()
         if self.path_to_library.exists():
             if self.path_to_library.with_suffix(".pickle").exists() and not upgraded:
@@ -714,11 +725,22 @@ class RefractiveIndexLibrary:
         if exact_match:
             for m in self.materials_list:
                 if page_name == m.yaml_data.name:
-                    materials.append(m)
+                    if isinstance(m, Material):
+                        materials.append(m)
+                    elif isinstance(m, YAMLLibraryData):
+                        materials.append(self.get_material(m.lib_shelf, m.lib_book, m.lib_page))
+                    else:
+                        warnings.warn("Unknown material type.")
         else:
             for m in self.materials_list:
-                if page_name in m.yaml_data.name:
-                    materials.append(m)
+                if isinstance(m, YAMLLibraryData):
+                    if page_name in m.name:
+                        materials.append(self.get_material(m.lib_shelf, m.lib_book, m.lib_page))
+                elif isinstance(m, Material):
+                    if page_name in m.yaml_data.name:
+                        materials.append(m)
+                else:
+                    warnings.warn("Unknown material type.")
         return (
             materials[0]
             if len(materials) == 1
@@ -801,6 +823,33 @@ class RefractiveIndexLibrary:
             >>> print(bk7.get_n(0.5875618))
             1.5168000345005885
         """
+        if shelf not in self.materials_dict:
+            raise ValueError(f"Shelf {shelf} not found in database.")
+        if book not in self.materials_dict[shelf]:
+            raise ValueError(f"Book {book} not found in database.")
+        if page not in self.materials_dict[shelf][book]:
+            raise ValueError(f"Page {page} not found in database.")
+        if not self.materials_dict[shelf][book][page]:
+            raise ValueError(f"Material {shelf}/{book}/{page} not found in database.")
+        # check if material is a string or YAMLLibraryData object, if so load it and replace it in the dict
+        if isinstance(self.materials_dict[shelf][book][page], YAMLLibraryData):
+            # check if pickled material exists
+            material_pickle_path = self.path_to_library.parent.joinpath(
+                f"pickled/{shelf}_{book}_{page}.pkl"
+            )
+            if material_pickle_path.exists():
+                with open(material_pickle_path, "rb") as f:
+                    self.materials_dict[shelf][book][page] = pickle.load(f)
+            else:
+
+                self.materials_dict[shelf][book][page] = yaml_to_material(
+                    self.materials_dict[shelf][book][page].lib_path,
+                    shelf,
+                    book,
+                    page,
+                    self.materials_dict[shelf][book][page].name,
+                )
+
         return self.materials_dict[shelf][book][page]
 
     def get_material_by_path(self, yaml_path: str) -> Material:
@@ -820,124 +869,103 @@ class RefractiveIndexLibrary:
         return mat_found[0] if mat_found else None
 
 
-def yaml_to_material(
-    filepath: str | Path, lib_shelf: str, lib_book: str, lib_page: str, lib_name: str
-) -> Material | None:
+def yaml_to_material(filepath: str | Path, lib_shelf: str, lib_book: str, lib_page: str,
+                     lib_name: str) -> Material | None:
     """Converts RefractiveIndex.info YAML to Material
 
-    Reads a yaml file of the refractiveindex database and converts it to a Material object.
+Reads a yaml file of the refractiveindex database and converts it to a Material object.
 
-    Args:
-        filepath: path to yaml file
-        lib_shelf: RefractiveIndex.info shelf name
-        lib_book: RefractiveIndex.info book name
-        lib_page: RefractiveIndex.info page name
-        lib_name: RefractiveIndex.info material name
+Args:
+    filepath: path to yaml file
+    lib_shelf: RefractiveIndex.info shelf name
+    lib_book: RefractiveIndex.info book name
+    lib_page: RefractiveIndex.info page name
+    lib_name: RefractiveIndex.info material name
 
-    Returns:
-        Material object
-    """
-    if isinstance(filepath, str):
-        filepath = Path(filepath)
-
+Returns:
+    Material object
+"""
+    filepath = Path(filepath) if isinstance(filepath, str) else filepath
     def fill_variables_from_data_dict(data):
         """Helper function to split data in yaml into Material attributes"""
-        data_type = data["type"]
         _wl_min = _wl_max = _wl = _n = _k = _coefficients = _formula = None
-        if data_type == "tabulated nk":
-            _wl, _n, _k = np.loadtxt(data["data"].split("\n")).T
-            _wl_min = np.min(_wl)
-            _wl_max = np.max(_wl)
-        elif data_type == "tabulated n":
-            (
-                _wl,
-                _n,
-            ) = np.loadtxt(data["data"].split("\n")).T
-            _wl_min = np.min(_wl)
-            _wl_max = np.max(_wl)
-        elif data_type == "tabulated k":
-            (
-                _wl,
-                _k,
-            ) = np.loadtxt(data["data"].split("\n")).T
-            _wl_min = np.min(_wl)
-            _wl_max = np.max(_wl)
+        data_type = data["type"]
+
+        if "tabulated" in data_type:
+            # Load tabulated data
+            raw_data = np.loadtxt(data["data"].split("\n"))
+
+            # Ensure data is 2D even for a single row
+            if raw_data.ndim == 1:
+                raw_data = raw_data[np.newaxis, :]  # Convert 1D array to 2D
+
+            _wl = raw_data[:, 0]  # Wavelength is always the first column
+            if "nk" in data_type:
+                _n, _k = raw_data[:, 1], raw_data[:, 2]  # n and k values
+            elif "n" in data_type:
+                _n = raw_data[:, 1]  # Only n values
+            elif "k" in data_type:
+                _k = raw_data[:, 1]  # Only k values
+
+            _wl_min, _wl_max = np.min(_wl), np.max(_wl)
         elif "formula" in data_type:
             _wl_range = data.get("wavelength_range") or data.get("range")
-            _wl_min, _wl_max = _wl_range if _wl_range is not None else None, None
+            try:
+                _wl_min, _wl_max = [float(w) for w in _wl_range.split()]
+            except ValueError:
+                _wl_min, _wl_max = (None, None)
             _coefficients = np.array([float(c) for c in data["coefficients"].split()])
-            _formula = data["type"].split()[1]
-        # else:
-        #     logger.warning(f"Could not convert YAML data for datatype {data_type}")
+            _formula = data_type.split()[1]
         return _wl, _wl_min, _wl_max, _n, _k, _coefficients, _formula
 
-    with open(filepath) as f:
-        n_class = k_class = None
-        try:
-            d = yaml.safe_load(f)
+    try:
+        with open(filepath, encoding='utf-8') as f:
+            yaml_content = f.read()  # Read the file once
+            # yaml_parser = YAML()
+            d = yaml.safe_load(yaml_content)  # Parse the YAML content
 
-            # fill core data from yaml file
-            (
-                wl_n,
-                wl_min_n,
-                wl_max_n,
-                n,
-                k,
-                coefficients,
-                formula,
-            ) = fill_variables_from_data_dict(d["DATA"][0])
-            if formula:
-                n_class = FormulaIndexData(
-                    getattr(dispersion_formulas, f"formula_{formula}"),
-                    coefficients,
-                    wl_min_n,
-                    wl_max_n,
-                )
-            elif n is not None:
-                n_class = TabulatedIndexData(wl_n, n, True, True)
-                if k is not None:
-                    k_class = TabulatedIndexData(wl_n, k, True, True)
+            data_blocks = d.get("DATA", [])
+            specs = Specs.read_specs_from_yaml(d.get("SPECS", None)) if "SPECS" in d else None
 
-            (
-                wl_k,
-                wl_min_k,
-                wl_max_k,
-                _,
-                k,
-                coefficients_k,
-                formula_k,
-            ) = fill_variables_from_data_dict(next(iter(d["DATA"][1:2]), {"type": ""}))
-            if formula_k:
-                k_class = FormulaIndexData(
-                    getattr(dispersion_formulas, f"formula_{formula}"),
-                    coefficients_k,
-                    wl_min_k,
-                    wl_max_k,
-                )
-            elif k is not None:
-                k_class = TabulatedIndexData(wl_k, k, True, True)
+            n_class, k_class = None, None
+            if data_blocks:
+                n_data = data_blocks[0]
+                wl_n, wl_min_n, wl_max_n, n, k, coefficients, formula = fill_variables_from_data_dict(n_data)
+                if formula:
+                    n_class = FormulaIndexData(getattr(dispersion_formulas, f"formula_{formula}"), coefficients,
+                                               wl_min_n, wl_max_n)
+                elif n is not None:
+                    n_class = TabulatedIndexData(wl_n, n, 'interp1d', True)
+                    k_class = TabulatedIndexData(wl_n, k, 'interp1d', True) if k is not None else None
 
-            # fill additional spec data if present
-            try:
-                specs = Specs.read_specs_from_yaml(d["SPECS"])
-            except:
-                specs = None
-        except ScannerError:
-            logger.warning(f"Could not read data in {filepath}")
-            return None
-        except ValueError:
-            logger.warning(f"Could not read data in {filepath} due to bad data")
-            return None
+                k_data = next((item for item in data_blocks[1:] if item), {"type": ""})
+                wl_k, wl_min_k, wl_max_k, _, k, coefficients_k, formula_k = fill_variables_from_data_dict(k_data)
+                if formula_k:
+                    k_class = FormulaIndexData(getattr(dispersion_formulas, f"formula_{formula_k}"), coefficients_k,
+                                               wl_min_k, wl_max_k)
+                elif k is not None:
+                    k_class = TabulatedIndexData(wl_k, k, 'interp1d', True)
 
-    return Material(
-        n_class,
-        k_class,
-        specs,
-        YAMLLibraryData(
-            lib_name, yaml.dump(d), lib_shelf, lib_book, lib_page, filepath
-        ),
+            return Material(
+                n_class,
+                k_class,
+                specs,
+                YAMLLibraryData(lib_name, yaml_content, lib_shelf, lib_book, lib_page, filepath),
+            )
+    except (ScannerError, ValueError, IndexError) as e:
+        logger.warning(f"Could not read data in {filepath}: {e}")
+        return None
+
+
+def load_material(m, path_to_library):
+    """Helper function to load a material."""
+    mat = yaml_to_material(
+        path_to_library.parent.joinpath("data-nk").joinpath(m.lib_data),
+        m.lib_shelf, m.lib_book, m.lib_page, m.name
     )
-
+    if mat:
+        return m.lib_shelf, m.lib_book, m.lib_page, mat
+    return None
 
 def fit_tabulated(
         tid: TabulatedIndexData, formula: callable, coefficients: list | np.ndarray, debug: bool = False

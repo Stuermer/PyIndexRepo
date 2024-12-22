@@ -8,7 +8,7 @@ def test_tabulated_n_material():
         n=TabulatedIndexData(
             wl=[0.3, 0.5, 0.7],
             n_or_k=[1.5, 1.4, 1.3],
-            use_interpolation=True,
+            interpolation_func="interp1d",
             bounds_error=True,
         )
     )
@@ -20,7 +20,7 @@ def test_tabulated_k_material():
         k=TabulatedIndexData(
             wl=[0.3, 0.5, 0.7],
             n_or_k=[1.5, 1.4, 1.3],
-            use_interpolation=True,
+            interpolation_func="interp1d",
             bounds_error=True,
         )
     )

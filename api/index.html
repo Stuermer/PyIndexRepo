@@ -1310,20 +1310,35 @@ class RefractiveIndexLibrary:
     def __post_init__(self):
         upgraded = False
         # create database folder if it doesn't exist
-        if not self.path_to_library.parent.is_dir():
-            self.path_to_library.parent.mkdir()
-        if self.auto_upgrade or self.force_upgrade or not any(self.path_to_library.parent.iterdir()):
-            upgraded = self._download_latest_commit()
-        if self.path_to_library.exists():
-            if self.path_to_library.with_suffix(".pickle").exists() and not upgraded:
-                self._load_from_pickle()
+        try:
+            if not self.path_to_library.parent.is_dir():
+                self.path_to_library.parent.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            warnings.warn(f"Failed to create directory: {e}")
+            return
+
+        # check if the folder is empty or upgrade is needed
+        try:
+            if self.auto_upgrade or self.force_upgrade or not os.listdir(self.path_to_library.parent):
+                upgraded = self._download_latest_commit()
+        except Exception as e:
+            warnings.warn(f"Failed to check directory contents or download latest commit: {e}")
+            return
+
+        # load data from the appropriate source
+        try:
+            if self.path_to_library.exists():
+                if self.path_to_library.with_suffix(".pickle").exists() and not upgraded:
+                    self._load_from_pickle()
+                else:
+                    self._load_from_yaml()
+                    self._convert_to_material_dict()
             else:
-                self._load_from_yaml()
-                self._convert_to_material_dict()
-        else:
-            warnings.warn(
-                "Path to library does not exist! Please check path or activate auto_upgrade to download."
-            )
+                warnings.warn(
+                    "Path to library does not exist! Please check path or activate auto_upgrade to download."
+                )
+        except Exception as e:
+            warnings.warn(f"Failed to load data: {e}")
 
     def search_material_by_page_name(
         self, page_name: str, exact_match: bool = False

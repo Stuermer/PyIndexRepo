@@ -100,6 +100,224 @@
 
 
 
+<h2 id="pyindexrepo.main.Conditions" class="doc doc-heading">
+            <code>Conditions</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+
+        <p>A dataclass representing the environmental conditions.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>temperature</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The temperature in Celsius. None if unspecified.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>pressure</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The pressure in MPa. None if unspecified.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>pyindexrepo/main.py</code></summary>
+                <pre class="highlight"><code class="language-python">@dataclass
+class Conditions:
+    """
+    A dataclass representing the environmental conditions.
+
+    Attributes:
+        temperature (float, optional): The temperature in Celsius. None if unspecified.
+        pressure (float, optional): The pressure in MPa. None if unspecified.
+    """
+
+    temperature: float | None = None
+    pressure: float | None = None
+
+    @staticmethod
+    def parse_temperature(temperature):
+        """Parse temperature string to Celsius."""
+        if isinstance(temperature, str):
+            if "K" in temperature:
+                return float(temperature.split()[0]) - 273.15
+            elif "C" in temperature:
+                return float(temperature.split()[0])
+            else:
+                warnings.warn("Temperature unit not recognized. Assuming Kelvin.")
+                return float(temperature.split()[0]) - 273.15
+        return Specs.parse_float(temperature)
+
+    @staticmethod
+    def parse_pressure(pressure):
+        """Parse pressure string to MPa."""
+        if isinstance(pressure, str):
+            return Specs.parse_float(pressure.replace(" MPa", ""))
+        return Specs.parse_float(pressure)
+
+    @staticmethod
+    def read_conditions_from_yaml(conditions_dict):
+        """Read conditions from a YAML dictionary and create a Conditions object."""
+        return Conditions(
+            temperature=Conditions.parse_temperature(conditions_dict.get("temperature")),
+            pressure=Conditions.parse_pressure(conditions_dict.get("pressure")),
+        )</code></pre>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pyindexrepo.main.Conditions.parse_pressure" class="doc doc-heading">
+            <code class="highlight language-python">parse_pressure(pressure)</code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Parse pressure string to MPa.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
+              <pre class="highlight"><code class="language-python">@staticmethod
+def parse_pressure(pressure):
+    """Parse pressure string to MPa."""
+    if isinstance(pressure, str):
+        return Specs.parse_float(pressure.replace(" MPa", ""))
+    return Specs.parse_float(pressure)</code></pre>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pyindexrepo.main.Conditions.parse_temperature" class="doc doc-heading">
+            <code class="highlight language-python">parse_temperature(temperature)</code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Parse temperature string to Celsius.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
+              <pre class="highlight"><code class="language-python">@staticmethod
+def parse_temperature(temperature):
+    """Parse temperature string to Celsius."""
+    if isinstance(temperature, str):
+        if "K" in temperature:
+            return float(temperature.split()[0]) - 273.15
+        elif "C" in temperature:
+            return float(temperature.split()[0])
+        else:
+            warnings.warn("Temperature unit not recognized. Assuming Kelvin.")
+            return float(temperature.split()[0]) - 273.15
+    return Specs.parse_float(temperature)</code></pre>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pyindexrepo.main.Conditions.read_conditions_from_yaml" class="doc doc-heading">
+            <code class="highlight language-python">read_conditions_from_yaml(conditions_dict)</code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Read conditions from a YAML dictionary and create a Conditions object.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
+              <pre class="highlight"><code class="language-python">@staticmethod
+def read_conditions_from_yaml(conditions_dict):
+    """Read conditions from a YAML dictionary and create a Conditions object."""
+    return Conditions(
+        temperature=Conditions.parse_temperature(conditions_dict.get("temperature")),
+        pressure=Conditions.parse_pressure(conditions_dict.get("pressure")),
+    )</code></pre>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
 <h2 id="pyindexrepo.main.FormulaIndexData" class="doc doc-heading">
             <code>FormulaIndexData</code>
 
@@ -129,7 +347,7 @@
         <ul class="first simple">
             <li>
               <b><code>formula</code></b>
-                  (<code>callable</code>)
+                  (<code><span title="callable">callable</span></code>)
               –
               <div class="doc-md-description">
                 <p>A callable function that computes the refractive index (n) or extinction coefficient (k) for a given wavelength.</p>
@@ -145,7 +363,7 @@
             </li>
             <li>
               <b><code>min_wl</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>The minimum wavelength (in microns) for which the formula is valid. Default is negative infinity.</p>
@@ -153,7 +371,7 @@
             </li>
             <li>
               <b><code>max_wl</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>The maximum wavelength (in microns) for which the formula is valid. Default is positive infinity.</p>
@@ -255,7 +473,7 @@ class FormulaIndexData:
         <ul class="first simple">
             <li>
               <b><code>n</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.main.TabulatedIndexData" href="#pyindexrepo.main.TabulatedIndexData">TabulatedIndexData</a> | <a class="autorefs autorefs-internal" title="pyindexrepo.main.FormulaIndexData" href="#pyindexrepo.main.FormulaIndexData">FormulaIndexData</a> | None</code>)
+                  (<code><a class="autorefs autorefs-internal" title="TabulatedIndexData (pyindexrepo.main.TabulatedIndexData)" href="#pyindexrepo.main.TabulatedIndexData">TabulatedIndexData</a> | <a class="autorefs autorefs-internal" title="FormulaIndexData (pyindexrepo.main.FormulaIndexData)" href="#pyindexrepo.main.FormulaIndexData">FormulaIndexData</a> | None</code>)
               –
               <div class="doc-md-description">
                 <p>The refractive index (n) data for the material.
@@ -264,7 +482,7 @@ It can be an instance of TabulatedIndexData or FormulaIndexData, or None if unsp
             </li>
             <li>
               <b><code>k</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.main.TabulatedIndexData" href="#pyindexrepo.main.TabulatedIndexData">TabulatedIndexData</a> | <a class="autorefs autorefs-internal" title="pyindexrepo.main.FormulaIndexData" href="#pyindexrepo.main.FormulaIndexData">FormulaIndexData</a> | None</code>)
+                  (<code><a class="autorefs autorefs-internal" title="TabulatedIndexData (pyindexrepo.main.TabulatedIndexData)" href="#pyindexrepo.main.TabulatedIndexData">TabulatedIndexData</a> | <a class="autorefs autorefs-internal" title="FormulaIndexData (pyindexrepo.main.FormulaIndexData)" href="#pyindexrepo.main.FormulaIndexData">FormulaIndexData</a> | None</code>)
               –
               <div class="doc-md-description">
                 <p>The extinction coefficient (k) data for the material.
@@ -273,11 +491,19 @@ It can be an instance of TabulatedIndexData or FormulaIndexData, or None if unsp
             </li>
             <li>
               <b><code>specs</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.main.Specs" href="#pyindexrepo.main.Specs">Specs</a> | None</code>)
+                  (<code><a class="autorefs autorefs-internal" title="Specs (pyindexrepo.main.Specs)" href="#pyindexrepo.main.Specs">Specs</a> | None</code>)
               –
               <div class="doc-md-description">
                 <p>An instance of the Specs dataclass representing material specifications.
 None if unspecified.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>conditions</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="Conditions (pyindexrepo.main.Conditions)" href="#pyindexrepo.main.Conditions">Conditions</a> | None</code>)
+              –
+              <div class="doc-md-description">
+                <p>(Conditions | None, optional): An instance of the Conditions dataclass representing environmental conditions.</p>
               </div>
             </li>
             <li>
@@ -291,7 +517,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>name</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>The name of the material. Normally extracted from the YAML data, but can be overridden. Empty string if unspecified.</p>
@@ -321,6 +547,7 @@ class Material:
             It can be an instance of TabulatedIndexData or FormulaIndexData, or None if unspecified.
         specs (Specs | None, optional): An instance of the Specs dataclass representing material specifications.
             None if unspecified.
+        conditions: (Conditions | None, optional): An instance of the Conditions dataclass representing environmental conditions.
         yaml_data (YAMLLibraryData, optional): An instance of the YAMLLibraryData class representing YAML library data.
             None if unspecified.
         name (str, optional): The name of the material. Normally extracted from the YAML data, but can be overridden. Empty string if unspecified.
@@ -329,6 +556,7 @@ class Material:
     n: TabulatedIndexData | FormulaIndexData | None = field(default=None)
     k: TabulatedIndexData | FormulaIndexData | None = field(default=None)
     specs: Specs | None = field(default=None)
+    conditions: Conditions | None = field(default=None)
     yaml_data: YAMLLibraryData = field(default=None)
     name: str = field(default=yaml_data.name if yaml_data else "")
 
@@ -394,7 +622,7 @@ class Material:
             return n_abs + self.specs.thermal_dispersion.delta_n_abs(
                 n_abs,
                 wavelength,
-                temperature - self.specs.temperature + 273.15,
+                temperature - self.conditions.temperature + 273.15,
                 self.specs.thermal_dispersion.coefficients,
             )
         else:
@@ -405,12 +633,12 @@ class Material:
             )
             n_rel = self.get_n(rel_wavelength)
             n_abs = dispersion_formulas.relative_to_absolute(
-                n_rel, rel_wavelength, self.specs.temperature - 273.15, 0.10133
+                n_rel, rel_wavelength, self.conditions.temperature - 273.15, 0.10133
             )
             n_abs += self.specs.thermal_dispersion.delta_n_abs(
                 n_abs,
                 rel_wavelength,
-                temperature - self.specs.temperature + 273.15,
+                temperature - self.conditions.temperature + 273.15,
                 *self.specs.thermal_dispersion.coefficients,
             )
             return dispersion_formulas.absolute_to_relative(
@@ -462,7 +690,7 @@ class Material:
         <ul class="first simple">
             <li>
               <b><code>wavelength</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>Wavelength or array of wavelengths in micrometers.</p>
@@ -485,7 +713,7 @@ class Material:
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code>float | <span title="numpy.ndarray">ndarray</span></code>
+                  <code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>
               –
               <div class="doc-md-description">
                 <p>float or array of floats: Extinction coefficient k for the given wavelength</p>
@@ -542,7 +770,7 @@ class Material:
         <ul class="first simple">
             <li>
               <b><code>wavelength</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>Wavelength or array of wavelengths in micrometers.</p>
@@ -565,7 +793,7 @@ class Material:
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code>float | <span title="numpy.ndarray">ndarray</span></code>
+                  <code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>
               –
               <div class="doc-md-description">
                 <p>float or array of floats: Refractive index n for the given wavelength</p>
@@ -622,7 +850,7 @@ class Material:
         <ul class="first simple">
             <li>
               <b><code>wavelength</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>Wavelength or array of wavelengths in micrometers.</p>
@@ -630,7 +858,7 @@ class Material:
             </li>
             <li>
               <b><code>temperature</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>Temperature in degrees</p>
@@ -638,7 +866,7 @@ class Material:
             </li>
             <li>
               <b><code>P</code></b>
-                  (<code>float</code>, default:
+                  (<code><span title="float">float</span></code>, default:
                       <code>0.10133</code>
 )
               –
@@ -663,7 +891,7 @@ class Material:
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code>float | <span title="numpy.ndarray">ndarray</span></code>
+                  <code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>
               –
               <div class="doc-md-description">
                 <p>float or array of floats: Refractive index n at the given temperature for the given wavelength</p>
@@ -699,7 +927,7 @@ class Material:
         return n_abs + self.specs.thermal_dispersion.delta_n_abs(
             n_abs,
             wavelength,
-            temperature - self.specs.temperature + 273.15,
+            temperature - self.conditions.temperature + 273.15,
             self.specs.thermal_dispersion.coefficients,
         )
     else:
@@ -710,12 +938,12 @@ class Material:
         )
         n_rel = self.get_n(rel_wavelength)
         n_abs = dispersion_formulas.relative_to_absolute(
-            n_rel, rel_wavelength, self.specs.temperature - 273.15, 0.10133
+            n_rel, rel_wavelength, self.conditions.temperature - 273.15, 0.10133
         )
         n_abs += self.specs.thermal_dispersion.delta_n_abs(
             n_abs,
             rel_wavelength,
-            temperature - self.specs.temperature + 273.15,
+            temperature - self.conditions.temperature + 273.15,
             *self.specs.thermal_dispersion.coefficients,
         )
         return dispersion_formulas.absolute_to_relative(
@@ -752,7 +980,7 @@ class Material:
         <ul class="first simple">
             <li>
               <b><code>wavelength</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>Wavelength or array of wavelengths in micrometers.</p>
@@ -775,7 +1003,7 @@ class Material:
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code>tuple[float | <span title="numpy.ndarray">ndarray</span>, float | <span title="numpy.ndarray">ndarray</span>]</code>
+                  <code><span title="tuple">tuple</span>[<span title="float">float</span> | <span title="numpy.ndarray">ndarray</span>, <span title="float">float</span> | <span title="numpy.ndarray">ndarray</span>]</code>
               –
               <div class="doc-md-description">
                 <p>tuple of floats or arrays of floats: Refractive index n and extinction coefficient k for the given wavelength</p>
@@ -853,7 +1081,7 @@ Default is a path pointing to a default library file.</p>
             </li>
             <li>
               <b><code>auto_upgrade</code></b>
-                  (<code>bool</code>)
+                  (<code><span title="bool">bool</span></code>)
               –
               <div class="doc-md-description">
                 <p>Automatically upgrade the library when initialized if set to True.
@@ -862,7 +1090,7 @@ Default is False.</p>
             </li>
             <li>
               <b><code>force_upgrade</code></b>
-                  (<code>bool</code>)
+                  (<code><span title="bool">bool</span></code>)
               –
               <div class="doc-md-description">
                 <p>Forcefully upgrade the library even if not necessary if set to True.
@@ -871,7 +1099,7 @@ Default is False.</p>
             </li>
             <li>
               <b><code>materials_yaml</code></b>
-                  (<code>(<span title="typing.List">List</span>[<span title="pyindexrepo.main.YAMLLibraryData">YAMLLibraryData</span>], read - only)</code>)
+                  (<code>(<span title="typing.List">List</span>[<span title="pyindexrepo.main.YAMLLibraryData">YAMLLibraryData</span>], <span title="read">read</span> - <span title="only">only</span>)</code>)
               –
               <div class="doc-md-description">
                 <p>A list of YAML library data instances representing materials.</p>
@@ -879,7 +1107,7 @@ Default is False.</p>
             </li>
             <li>
               <b><code>materials_dict</code></b>
-                  (<code>(Dict[str, Dict[str, Dict[str, <a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a>]]], read - only)</code>)
+                  (<code>(<span title="Dict">Dict</span>[<span title="str">str</span>, <span title="Dict">Dict</span>[<span title="str">str</span>, <span title="Dict">Dict</span>[<span title="str">str</span>, <a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a>]]], <span title="read">read</span> - <span title="only">only</span>)</code>)
               –
               <div class="doc-md-description">
                 <p>A dictionary of materials organized by catalog, category, and name.</p>
@@ -887,7 +1115,7 @@ Default is False.</p>
             </li>
             <li>
               <b><code>materials_list</code></b>
-                  (<code>(<span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a>], read - only)</code>)
+                  (<code>(<span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a>], <span title="read">read</span> - <span title="only">only</span>)</code>)
               –
               <div class="doc-md-description">
                 <p>A list of all materials contained in the library.</p>
@@ -895,7 +1123,7 @@ Default is False.</p>
             </li>
             <li>
               <b><code>github_sha</code></b>
-                  (<code>(str, read - only)</code>)
+                  (<code>(<span title="str">str</span>, <span title="read">read</span> - <span title="only">only</span>)</code>)
               –
               <div class="doc-md-description">
                 <p>The GitHub SHA corresponding to the version of the library data.</p>
@@ -988,7 +1216,7 @@ class RefractiveIndexLibrary:
                 subfolder_files = [
                     file
                     for file in file_list
-                    if file.startswith(f"{file_list[0]}database/data-nk")
+                    if file.startswith(f"{file_list[0]}database/data")
                     and file.endswith(".yml")
                 ]
                 subfolder_files.append(f"{file_list[0]}database/catalog-nk.yml")
@@ -1033,7 +1261,7 @@ class RefractiveIndexLibrary:
                                 lib_book=book["BOOK"],
                                 lib_shelf=s["SHELF"],
                                 lib_data=page["data"],
-                                lib_path=self.path_to_library.parent.joinpath("data-nk", page["data"]),
+                                lib_path=self.path_to_library.parent.joinpath("data", page["data"]),
                             )
                         )
 
@@ -1045,7 +1273,7 @@ class RefractiveIndexLibrary:
         """
         for m in self.materials_yaml:
             # try to load material from yaml
-            mat = yaml_to_material(self.path_to_library.parent.joinpath("data-nk").joinpath(m.lib_data), m.lib_shelf,
+            mat = yaml_to_material(self.path_to_library.parent.joinpath("data").joinpath(m.lib_data), m.lib_shelf,
                                    m.lib_book, m.lib_page, m.name)
             if mat:
                 # add material to dict, use shelf, book and page as keys
@@ -1218,7 +1446,7 @@ class RefractiveIndexLibrary:
 
         Examples:
             &gt;&gt;&gt; db = RefractiveIndexLibrary()
-            &gt;&gt;&gt; bk7 = db.get_material("glass", "SCHOTT-BK", "N-BK7")
+            &gt;&gt;&gt; bk7 = db.get_material("specs", "SCHOTT-optical", "N-BK7")
             &gt;&gt;&gt; print(bk7.get_n(0.5875618))
             1.5168000345005885
         """
@@ -1307,7 +1535,7 @@ class RefractiveIndexLibrary:
         <ul class="first simple">
             <li>
               <b><code>shelf</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>shelf name</p>
@@ -1315,7 +1543,7 @@ class RefractiveIndexLibrary:
             </li>
             <li>
               <b><code>book</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>book name</p>
@@ -1323,7 +1551,7 @@ class RefractiveIndexLibrary:
             </li>
             <li>
               <b><code>page</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>page name</p>
@@ -1346,7 +1574,7 @@ class RefractiveIndexLibrary:
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a></code>
+                  <code><a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a></code>
               –
               <div class="doc-md-description">
                 <p>Material object</p>
@@ -1360,7 +1588,7 @@ class RefractiveIndexLibrary:
 
 <p><span class="doc-section-title">Examples:</span></p>
     <pre class="highlight"><code class="language-pycon">&gt;&gt;&gt; db = RefractiveIndexLibrary()
-&gt;&gt;&gt; bk7 = db.get_material("glass", "SCHOTT-BK", "N-BK7")
+&gt;&gt;&gt; bk7 = db.get_material("specs", "SCHOTT-optical", "N-BK7")
 &gt;&gt;&gt; print(bk7.get_n(0.5875618))
 1.5168000345005885</code></pre>
 
@@ -1381,7 +1609,7 @@ class RefractiveIndexLibrary:
 
     Examples:
         &gt;&gt;&gt; db = RefractiveIndexLibrary()
-        &gt;&gt;&gt; bk7 = db.get_material("glass", "SCHOTT-BK", "N-BK7")
+        &gt;&gt;&gt; bk7 = db.get_material("specs", "SCHOTT-optical", "N-BK7")
         &gt;&gt;&gt; print(bk7.get_n(0.5875618))
         1.5168000345005885
     """
@@ -1444,7 +1672,7 @@ class RefractiveIndexLibrary:
         <ul class="first simple">
             <li>
               <b><code>yaml_path</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>path as shown on refractive index when hovered over 'CSV - comma separated data'</p>
@@ -1467,7 +1695,7 @@ class RefractiveIndexLibrary:
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a></code>
+                  <code><a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a></code>
               –
               <div class="doc-md-description">
                 <p>Material object</p>
@@ -1528,7 +1756,7 @@ In return, you get a sorted list of materials with index [0] being the closest t
         <ul class="first simple">
             <li>
               <b><code>n</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>refractive index</p>
@@ -1536,7 +1764,7 @@ In return, you get a sorted list of materials with index [0] being the closest t
             </li>
             <li>
               <b><code>wl</code></b>
-                  (<code>float</code>, default:
+                  (<code><span title="float">float</span></code>, default:
                       <code>0.5875618</code>
 )
               –
@@ -1546,7 +1774,7 @@ In return, you get a sorted list of materials with index [0] being the closest t
             </li>
             <li>
               <b><code>filter_shelf</code></b>
-                  (<code>str | None</code>, default:
+                  (<code><span title="str">str</span> | None</code>, default:
                       <code>None</code>
 )
               –
@@ -1556,7 +1784,7 @@ In return, you get a sorted list of materials with index [0] being the closest t
             </li>
             <li>
               <b><code>filter_book</code></b>
-                  (<code>str | None</code>, default:
+                  (<code><span title="str">str</span> | None</code>, default:
                       <code>None</code>
 )
               –
@@ -1593,7 +1821,7 @@ S-FPL51 1.498303051383454</code></pre>
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code>list[<a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a>]</code>
+                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a>]</code>
               –
               <div class="doc-md-description">
                 <p>sorted list of materials matching search criteria</p>
@@ -1696,7 +1924,7 @@ or None if it doesn't find a match.</p>
         <ul class="first simple">
             <li>
               <b><code>page_name</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>name of the material as given as page name on refractiveindex.info</p>
@@ -1704,7 +1932,7 @@ or None if it doesn't find a match.</p>
             </li>
             <li>
               <b><code>exact_match</code></b>
-                  (<code>bool</code>, default:
+                  (<code><span title="bool">bool</span></code>, default:
                       <code>False</code>
 )
               –
@@ -1729,7 +1957,7 @@ or None if it doesn't find a match.</p>
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a> | list[<a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a>] | None</code>
+                  <code><a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a> | <span title="list">list</span>[<a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a>] | None</code>
               –
               <div class="doc-md-description">
                 <p>Material or list of Materials matching the Name</p>
@@ -1843,7 +2071,7 @@ or None if it doesn't find a match.</p>
         <ul class="first simple">
             <li>
               <b><code>n_is_absolute</code></b>
-                  (<code>bool</code>)
+                  (<code><span title="bool">bool</span></code>)
               –
               <div class="doc-md-description">
                 <p>Indicates whether the refractive index is given in absolute units.
@@ -1852,7 +2080,7 @@ True if it is, False if not, and None if unspecified.</p>
             </li>
             <li>
               <b><code>wavelength_is_vacuum</code></b>
-                  (<code>bool</code>)
+                  (<code><span title="bool">bool</span></code>)
               –
               <div class="doc-md-description">
                 <p>Specifies whether the wavelength is given in vacuum.
@@ -1860,16 +2088,8 @@ True if it is, False if not, and None if unspecified.</p>
               </div>
             </li>
             <li>
-              <b><code>temperature</code></b>
-                  (<code>float</code>)
-              –
-              <div class="doc-md-description">
-                <p>The temperature of the material in degrees Celsius. None if unspecified.</p>
-              </div>
-            </li>
-            <li>
               <b><code>thermal_dispersion</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.main.ThermalDispersion" href="#pyindexrepo.main.ThermalDispersion">ThermalDispersion</a></code>)
+                  (<code><a class="autorefs autorefs-internal" title="ThermalDispersion (pyindexrepo.main.ThermalDispersion)" href="#pyindexrepo.main.ThermalDispersion">ThermalDispersion</a></code>)
               –
               <div class="doc-md-description">
                 <p>An instance of the ThermalDispersion class representing thermal dispersion information.
@@ -1878,7 +2098,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>nd</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>The refractive index (n) of the material. None if unspecified.</p>
@@ -1886,7 +2106,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>Vd</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>The Abbe number (Vd) of the material. None if unspecified.</p>
@@ -1894,7 +2114,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>glass_code</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>The glass code associated with the material. None if unspecified.</p>
@@ -1902,7 +2122,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>glass_status</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>The status or classification of the glass material as a string. None if unspecified.</p>
@@ -1910,7 +2130,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>density</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>The density of the material. None if unspecified.</p>
@@ -1918,7 +2138,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>thermal_expansion</code></b>
-                  (<code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="pyindexrepo.main.ThermalExpansion" href="#pyindexrepo.main.ThermalExpansion">ThermalExpansion</a>]</code>)
+                  (<code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="ThermalExpansion (pyindexrepo.main.ThermalExpansion)" href="#pyindexrepo.main.ThermalExpansion">ThermalExpansion</a>]</code>)
               –
               <div class="doc-md-description">
                 <p>A list of instances of the ThermalExpansion class representing thermal expansion properties.
@@ -1927,7 +2147,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>climatic_resistance</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>The material's resistance to climatic conditions. None if unspecified.</p>
@@ -1935,7 +2155,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>stain_resistance</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>The material's resistance to staining. None if unspecified.</p>
@@ -1943,7 +2163,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>acid_resistance</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>The material's resistance to acids. None if unspecified.</p>
@@ -1951,7 +2171,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>alkali_resistance</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>The material's resistance to alkalis. None if unspecified.</p>
@@ -1959,7 +2179,7 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>phosphate_resistance</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>The material's resistance to phosphates. None if unspecified.</p>
@@ -1987,7 +2207,7 @@ class Specs:
             True if it is, False if not, and None if unspecified.
         wavelength_is_vacuum (bool, optional): Specifies whether the wavelength is given in vacuum.
             True if it is, False if not, and None if unspecified.
-        temperature (float, optional): The temperature of the material in degrees Celsius. None if unspecified.
+
         thermal_dispersion (ThermalDispersion, optional): An instance of the ThermalDispersion class representing thermal dispersion information.
             None if unspecified.
         nd (float, optional): The refractive index (n) of the material. None if unspecified.
@@ -2042,18 +2262,7 @@ class Specs:
         except (ValueError, AttributeError):
             return None
 
-    @staticmethod
-    def parse_temperature(temperature):
-        """Parse temperature string to Celsius."""
-        if isinstance(temperature, str):
-            if "K" in temperature:
-                return float(temperature.split()[0]) - 273.15
-            elif "C" in temperature:
-                return float(temperature.split()[0])
-            else:
-                warnings.warn("Temperature unit not recognized. Assuming Kelvin.")
-                return float(temperature.split()[0]) - 273.15
-        return Specs.parse_float(temperature)
+
 
     @staticmethod
     def parse_density(density):
@@ -2104,9 +2313,6 @@ class Specs:
             for tr in specs_dict.get("thermal_expansion", [])
         ]
 
-        # Temperature
-        temperature = Specs.parse_temperature(specs_dict.get("temperature"))
-
         # Density
         density = Specs.parse_density(specs_dict.get("density"))
 
@@ -2125,7 +2331,6 @@ class Specs:
         return Specs(
             n_is_absolute=specs_dict.get("n_is_absolute"),
             wavelength_is_vacuum=specs_dict.get("wavelength_is_vacuum"),
-            temperature=temperature,
             thermal_dispersion=thermal_dispersion_list[0] if thermal_dispersion_list else None,
             nd=specs_dict.get("nd"),
             Vd=specs_dict.get("Vd"),
@@ -2333,42 +2538,6 @@ def parse_float(value, default=None):
 <div class="doc doc-object doc-function">
 
 
-<h3 id="pyindexrepo.main.Specs.parse_temperature" class="doc doc-heading">
-            <code class="highlight language-python">parse_temperature(temperature)</code>
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
-  </span>
-
-</h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Parse temperature string to Celsius.</p>
-
-            <details class="quote">
-              <summary>Source code in <code>pyindexrepo/main.py</code></summary>
-              <pre class="highlight"><code class="language-python">@staticmethod
-def parse_temperature(temperature):
-    """Parse temperature string to Celsius."""
-    if isinstance(temperature, str):
-        if "K" in temperature:
-            return float(temperature.split()[0]) - 273.15
-        elif "C" in temperature:
-            return float(temperature.split()[0])
-        else:
-            warnings.warn("Temperature unit not recognized. Assuming Kelvin.")
-            return float(temperature.split()[0]) - 273.15
-    return Specs.parse_float(temperature)</code></pre>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
 <h3 id="pyindexrepo.main.Specs.parse_temperature_range" class="doc doc-heading">
             <code class="highlight language-python">parse_temperature_range(tr_dict)</code>
 
@@ -2473,9 +2642,6 @@ def read_specs_from_yaml(specs_dict):
         for tr in specs_dict.get("thermal_expansion", [])
     ]
 
-    # Temperature
-    temperature = Specs.parse_temperature(specs_dict.get("temperature"))
-
     # Density
     density = Specs.parse_density(specs_dict.get("density"))
 
@@ -2494,7 +2660,6 @@ def read_specs_from_yaml(specs_dict):
     return Specs(
         n_is_absolute=specs_dict.get("n_is_absolute"),
         wavelength_is_vacuum=specs_dict.get("wavelength_is_vacuum"),
-        temperature=temperature,
         thermal_dispersion=thermal_dispersion_list[0] if thermal_dispersion_list else None,
         nd=specs_dict.get("nd"),
         Vd=specs_dict.get("Vd"),
@@ -2554,7 +2719,7 @@ def read_specs_from_yaml(specs_dict):
         <ul class="first simple">
             <li>
               <b><code>wl</code></b>
-                  (<code><span title="numpy.ndarray">ndarray</span> | list[float]</code>)
+                  (<code><span title="numpy.ndarray">ndarray</span> | <span title="list">list</span>[<span title="float">float</span>]</code>)
               –
               <div class="doc-md-description">
                 <p>An array or list containing wavelength values (in microns).</p>
@@ -2562,7 +2727,7 @@ def read_specs_from_yaml(specs_dict):
             </li>
             <li>
               <b><code>n_or_k</code></b>
-                  (<code><span title="numpy.ndarray">ndarray</span> | list[float]</code>)
+                  (<code><span title="numpy.ndarray">ndarray</span> | <span title="list">list</span>[<span title="float">float</span>]</code>)
               –
               <div class="doc-md-description">
                 <p>An array or list containing refractive index (n) or extinction coefficient (k) values.</p>
@@ -2570,7 +2735,7 @@ def read_specs_from_yaml(specs_dict):
             </li>
             <li>
               <b><code>ip</code></b>
-                  (<code>(callable, read - only)</code>)
+                  (<code>(<span title="callable">callable</span>, <span title="read">read</span> - <span title="only">only</span>)</code>)
               –
               <div class="doc-md-description">
                 <p>A callable property to perform interpolation on the data.</p>
@@ -2578,7 +2743,7 @@ def read_specs_from_yaml(specs_dict):
             </li>
             <li>
               <b><code>interpolation_func</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>Indicates what interpolation function to use. Default is 'interp1d'. Can also be 'spline'.</p>
@@ -2586,7 +2751,7 @@ def read_specs_from_yaml(specs_dict):
             </li>
             <li>
               <b><code>bounds_error</code></b>
-                  (<code>bool</code>)
+                  (<code><span title="bool">bool</span></code>)
               –
               <div class="doc-md-description">
                 <p>Indicates whether to raise an error for out-of-bounds queries.
@@ -2704,7 +2869,7 @@ For speed reasons, the function delta_n_abs is outsourced to the dispersion_form
         <ul class="first simple">
             <li>
               <b><code>formula_type</code></b>
-                  (<code>str | None</code>)
+                  (<code><span title="str">str</span> | None</code>)
               –
               <div class="doc-md-description">
                 <p>name of the formula. Supported are 'Schott formula'</p>
@@ -2712,7 +2877,7 @@ For speed reasons, the function delta_n_abs is outsourced to the dispersion_form
             </li>
             <li>
               <b><code>coefficients</code></b>
-                  (<code><span title="numpy.ndarray">ndarray</span> | float | None</code>)
+                  (<code><span title="numpy.ndarray">ndarray</span> | <span title="float">float</span> | None</code>)
               –
               <div class="doc-md-description">
                 <p>array with thermal dispersion coefficients (lengths depends on formula type)</p>
@@ -2720,7 +2885,7 @@ For speed reasons, the function delta_n_abs is outsourced to the dispersion_form
             </li>
             <li>
               <b><code>delta_n_abs</code></b>
-                  (<code>callable</code>)
+                  (<code><span title="callable">callable</span></code>)
               –
               <div class="doc-md-description">
                 <p>function called with the arguments (n_ref, wavelength, coefficients*)</p>
@@ -2889,7 +3054,7 @@ class ThermalExpansion:
         <ul class="first simple">
             <li>
               <b><code>n_data</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.main.YAMLRefractiveIndexData" href="#pyindexrepo.main.YAMLRefractiveIndexData">YAMLRefractiveIndexData</a></code>)
+                  (<code><a class="autorefs autorefs-internal" title="YAMLRefractiveIndexData (pyindexrepo.main.YAMLRefractiveIndexData)" href="#pyindexrepo.main.YAMLRefractiveIndexData">YAMLRefractiveIndexData</a></code>)
               –
               <div class="doc-md-description">
                 <p>An instance of YAMLRefractiveIndexData containing refractive index (n) data.</p>
@@ -2897,7 +3062,7 @@ class ThermalExpansion:
             </li>
             <li>
               <b><code>k_data</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="pyindexrepo.main.YAMLRefractiveIndexData" href="#pyindexrepo.main.YAMLRefractiveIndexData">YAMLRefractiveIndexData</a></code>)
+                  (<code><a class="autorefs autorefs-internal" title="YAMLRefractiveIndexData (pyindexrepo.main.YAMLRefractiveIndexData)" href="#pyindexrepo.main.YAMLRefractiveIndexData">YAMLRefractiveIndexData</a></code>)
               –
               <div class="doc-md-description">
                 <p>An instance of YAMLRefractiveIndexData containing extinction coefficient (k) data.</p>
@@ -2905,7 +3070,7 @@ class ThermalExpansion:
             </li>
             <li>
               <b><code>comments</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>Additional comments or notes related to the material data.
@@ -2914,7 +3079,7 @@ Default is an empty string, indicating no comments.</p>
             </li>
             <li>
               <b><code>references</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>References or sources of information for the material data.
@@ -3006,7 +3171,7 @@ class YAMLMaterialData:
         <ul class="first simple">
             <li>
               <b><code>data_type</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>The type of refractive index data, such as 'tabulated', 'formula', etc.</p>
@@ -3014,7 +3179,7 @@ class YAMLMaterialData:
             </li>
             <li>
               <b><code>wavelength_range</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>The range of wavelengths for which the data is valid.
@@ -3023,7 +3188,7 @@ Default is an empty string, indicating unspecified range.</p>
             </li>
             <li>
               <b><code>coefficients</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>A string containing coefficients or formula details for formula-based data.
@@ -3032,7 +3197,7 @@ Default is an empty string, indicating unspecified coefficients.</p>
             </li>
             <li>
               <b><code>data</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>A string containing the actual data in YAML format.
@@ -3111,7 +3276,7 @@ class YAMLRefractiveIndexData:
               <pre class="highlight"><code class="language-python">def load_material(m, path_to_library):
     """Helper function to load a material."""
     mat = yaml_to_material(
-        path_to_library.parent.joinpath("data-nk").joinpath(m.lib_data),
+        path_to_library.parent.joinpath("data").joinpath(m.lib_data),
         m.lib_shelf, m.lib_book, m.lib_page, m.name
     )
     if mat:
@@ -3149,7 +3314,7 @@ class YAMLRefractiveIndexData:
         <ul class="first simple">
             <li>
               <b><code>filepath</code></b>
-                  (<code>str | <span title="pathlib.Path">Path</span></code>)
+                  (<code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>)
               –
               <div class="doc-md-description">
                 <p>path to yaml file</p>
@@ -3157,7 +3322,7 @@ class YAMLRefractiveIndexData:
             </li>
             <li>
               <b><code>lib_shelf</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>RefractiveIndex.info shelf name</p>
@@ -3165,7 +3330,7 @@ class YAMLRefractiveIndexData:
             </li>
             <li>
               <b><code>lib_book</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>RefractiveIndex.info book name</p>
@@ -3173,7 +3338,7 @@ class YAMLRefractiveIndexData:
             </li>
             <li>
               <b><code>lib_page</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>RefractiveIndex.info page name</p>
@@ -3181,7 +3346,7 @@ class YAMLRefractiveIndexData:
             </li>
             <li>
               <b><code>lib_name</code></b>
-                  (<code>str</code>)
+                  (<code><span title="str">str</span></code>)
               –
               <div class="doc-md-description">
                 <p>RefractiveIndex.info material name</p>
@@ -3204,7 +3369,7 @@ class YAMLRefractiveIndexData:
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><a class="autorefs autorefs-internal" title="pyindexrepo.main.Material" href="#pyindexrepo.main.Material">Material</a> | None</code>
+                  <code><a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a> | None</code>
               –
               <div class="doc-md-description">
                 <p>Material object</p>
@@ -3273,34 +3438,39 @@ Returns:
             d = yaml.safe_load(yaml_content)  # Parse the YAML content
 
             data_blocks = d.get("DATA", [])
-            specs = Specs.read_specs_from_yaml(d.get("SPECS", None)) if "SPECS" in d else None
+            specs = Specs.read_specs_from_yaml(d.get("PROPERTIES", None)) if "PROPERTIES" in d else None
+            conditions = Conditions.read_conditions_from_yaml(d.get("CONDITIONS", None)) if "CONDITIONS" in d else None
 
             n_class, k_class = None, None
             if data_blocks:
-                n_data = data_blocks[0]
-                wl_n, wl_min_n, wl_max_n, n, k, coefficients, formula = fill_variables_from_data_dict(n_data)
-                if formula:
-                    n_class = FormulaIndexData(getattr(dispersion_formulas, f"formula_{formula}"), coefficients,
-                                               wl_min_n, wl_max_n)
-                elif n is not None:
-                    n_class = TabulatedIndexData(wl_n, n, 'interp1d', True)
-                    k_class = TabulatedIndexData(wl_n, k, 'interp1d', True) if k is not None else None
+                if isinstance(data_blocks, list):
+                    n_data = data_blocks[0]
+                    wl_n, wl_min_n, wl_max_n, n, k, coefficients, formula = fill_variables_from_data_dict(n_data)
+                    if formula:
+                        n_class = FormulaIndexData(getattr(dispersion_formulas, f"formula_{formula}"), coefficients,
+                                                   wl_min_n, wl_max_n)
+                    elif n is not None:
+                        n_class = TabulatedIndexData(wl_n, n, 'interp1d', True)
+                        k_class = TabulatedIndexData(wl_n, k, 'interp1d', True) if k is not None else None
 
-                k_data = next((item for item in data_blocks[1:] if item), {"type": ""})
-                wl_k, wl_min_k, wl_max_k, _, k, coefficients_k, formula_k = fill_variables_from_data_dict(k_data)
-                if formula_k:
-                    k_class = FormulaIndexData(getattr(dispersion_formulas, f"formula_{formula_k}"), coefficients_k,
-                                               wl_min_k, wl_max_k)
-                elif k is not None:
-                    k_class = TabulatedIndexData(wl_k, k, 'interp1d', True)
+                    k_data = next((item for item in data_blocks[1:] if item), {"type": ""})
+                    wl_k, wl_min_k, wl_max_k, _, k, coefficients_k, formula_k = fill_variables_from_data_dict(k_data)
+                    if formula_k:
+                        k_class = FormulaIndexData(getattr(dispersion_formulas, f"formula_{formula_k}"), coefficients_k,
+                                                   wl_min_k, wl_max_k)
+                    elif k is not None:
+                        k_class = TabulatedIndexData(wl_k, k, 'interp1d', True)
+                else:
+                    raise NotImplementedError("Dict data blocks not implemented yet.")
 
             return Material(
                 n_class,
                 k_class,
                 specs,
+                conditions,
                 YAMLLibraryData(lib_name, yaml_content, lib_shelf, lib_book, lib_page, filepath),
             )
-    except (ScannerError, ValueError, IndexError) as e:
+    except (ScannerError, ValueError, IndexError, NotImplementedError) as e:
         logger.warning(f"Could not read data in {filepath}: {e}")
         return None</code></pre>
             </details>
@@ -3367,7 +3537,7 @@ Returns:
         <ul class="first simple">
             <li>
               <b><code>n_abs</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>absolute refractive index.</p>
@@ -3375,7 +3545,7 @@ Returns:
             </li>
             <li>
               <b><code>wl</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>wavelength [micron]</p>
@@ -3383,7 +3553,7 @@ Returns:
             </li>
             <li>
               <b><code>T</code></b>
-                  (<code>float</code>, default:
+                  (<code><span title="float">float</span></code>, default:
                       <code>20.0</code>
 )
               –
@@ -3393,7 +3563,7 @@ Returns:
             </li>
             <li>
               <b><code>P</code></b>
-                  (<code>float</code>, default:
+                  (<code><span title="float">float</span></code>, default:
                       <code>0.10133</code>
 )
               –
@@ -3463,7 +3633,7 @@ Formula (3) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
         <ul class="first simple">
             <li>
               <b><code>n_abs_ref</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>absolute refractive index at reference temperature</p>
@@ -3471,7 +3641,7 @@ Formula (3) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>wl</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>wavelength in vacuum [micron]</p>
@@ -3479,7 +3649,7 @@ Formula (3) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>dT</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>temperature difference between reference and actual temperature</p>
@@ -3487,7 +3657,7 @@ Formula (3) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>D0</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>constant depending on material</p>
@@ -3495,7 +3665,7 @@ Formula (3) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>D1</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>constant depending on material</p>
@@ -3503,7 +3673,7 @@ Formula (3) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>D2</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>constant depending on material</p>
@@ -3511,7 +3681,7 @@ Formula (3) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>E0</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>constant depending on material</p>
@@ -3519,7 +3689,7 @@ Formula (3) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>E1</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>constant depending on material</p>
@@ -3527,7 +3697,7 @@ Formula (3) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>w_tk</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>constant depending on material</p>
@@ -3615,7 +3785,7 @@ Formula (2) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
         <ul class="first simple">
             <li>
               <b><code>n_abs_ref</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>absolute refractive index at reference temperature</p>
@@ -3623,7 +3793,7 @@ Formula (2) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>wl</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>wavelength in vacuum [micron]</p>
@@ -3631,7 +3801,7 @@ Formula (2) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>dT</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>temperature difference between reference and actual temperature</p>
@@ -3639,7 +3809,7 @@ Formula (2) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>D0</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>constant depending on material</p>
@@ -3647,7 +3817,7 @@ Formula (2) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>D1</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>constant depending on material</p>
@@ -3655,7 +3825,7 @@ Formula (2) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>D2</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>constant depending on material</p>
@@ -3663,7 +3833,7 @@ Formula (2) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>E0</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>constant depending on material</p>
@@ -3671,7 +3841,7 @@ Formula (2) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>E1</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>constant depending on material</p>
@@ -3679,7 +3849,7 @@ Formula (2) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
             </li>
             <li>
               <b><code>w_tk</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>constant depending on material</p>
@@ -3767,7 +3937,7 @@ def dn_absolute_temperature(
         <ul class="first simple">
             <li>
               <b><code>wl</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>wavelength</p>
@@ -3775,7 +3945,7 @@ def dn_absolute_temperature(
             </li>
             <li>
               <b><code>T</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>air temperature [°Celsius]</p>
@@ -3783,7 +3953,7 @@ def dn_absolute_temperature(
             </li>
             <li>
               <b><code>P</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>air pressure [MPa]</p>
@@ -4570,7 +4740,7 @@ def formula_9(wavelength, coefficients):
         <ul class="first simple">
             <li>
               <b><code>n_rel</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>relative refractive index</p>
@@ -4578,7 +4748,7 @@ def formula_9(wavelength, coefficients):
             </li>
             <li>
               <b><code>wl</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>wavelength [micron]</p>
@@ -4586,7 +4756,7 @@ def formula_9(wavelength, coefficients):
             </li>
             <li>
               <b><code>dT</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>temperature difference [°Celsius]</p>
@@ -4594,7 +4764,7 @@ def formula_9(wavelength, coefficients):
             </li>
             <li>
               <b><code>coefficient</code></b>
-                  (<code>float</code>)
+                  (<code><span title="float">float</span></code>)
               –
               <div class="doc-md-description">
                 <p>dn/dT</p>
@@ -4659,7 +4829,7 @@ def n_absolute_with_given_dndt(
         <ul class="first simple">
             <li>
               <b><code>wl</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>wavelength</p>
@@ -4667,7 +4837,7 @@ def n_absolute_with_given_dndt(
             </li>
             <li>
               <b><code>T</code></b>
-                  (<code>float</code>, default:
+                  (<code><span title="float">float</span></code>, default:
                       <code>20.0</code>
 )
               –
@@ -4677,7 +4847,7 @@ def n_absolute_with_given_dndt(
             </li>
             <li>
               <b><code>P</code></b>
-                  (<code>float</code>, default:
+                  (<code><span title="float">float</span></code>, default:
                       <code>0.10133</code>
 )
               –
@@ -4767,7 +4937,7 @@ def n_air(wl: float | np.ndarray, T: float = 20.0, P: float = 0.10133):
         <ul class="first simple">
             <li>
               <b><code>n_rel</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>relative refractive index</p>
@@ -4775,7 +4945,7 @@ def n_air(wl: float | np.ndarray, T: float = 20.0, P: float = 0.10133):
             </li>
             <li>
               <b><code>wl</code></b>
-                  (<code>float | <span title="numpy.ndarray">ndarray</span></code>)
+                  (<code><span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>)
               –
               <div class="doc-md-description">
                 <p>wavelength [micron]</p>
@@ -4783,7 +4953,7 @@ def n_air(wl: float | np.ndarray, T: float = 20.0, P: float = 0.10133):
             </li>
             <li>
               <b><code>T</code></b>
-                  (<code>float</code>, default:
+                  (<code><span title="float">float</span></code>, default:
                       <code>20.0</code>
 )
               –
@@ -4793,7 +4963,7 @@ def n_air(wl: float | np.ndarray, T: float = 20.0, P: float = 0.10133):
             </li>
             <li>
               <b><code>P</code></b>
-                  (<code>float</code>, default:
+                  (<code><span title="float">float</span></code>, default:
                       <code>0.10133</code>
 )
               –

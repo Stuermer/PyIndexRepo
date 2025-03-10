@@ -71,6 +71,46 @@ class ThermalExpansion:
     temperature_range: TemperatureRange
     coefficient: float
 
+@dataclass
+class Conditions:
+    """
+    A dataclass representing the environmental conditions.
+
+    Attributes:
+        temperature (float, optional): The temperature in Celsius. None if unspecified.
+        pressure (float, optional): The pressure in MPa. None if unspecified.
+    """
+
+    temperature: float | None = None
+    pressure: float | None = None
+
+    @staticmethod
+    def parse_temperature(temperature):
+        """Parse temperature string to Celsius."""
+        if isinstance(temperature, str):
+            if "K" in temperature:
+                return float(temperature.split()[0]) - 273.15
+            elif "C" in temperature:
+                return float(temperature.split()[0])
+            else:
+                warnings.warn("Temperature unit not recognized. Assuming Kelvin.")
+                return float(temperature.split()[0]) - 273.15
+        return Specs.parse_float(temperature)
+
+    @staticmethod
+    def parse_pressure(pressure):
+        """Parse pressure string to MPa."""
+        if isinstance(pressure, str):
+            return Specs.parse_float(pressure.replace(" MPa", ""))
+        return Specs.parse_float(pressure)
+
+    @staticmethod
+    def read_conditions_from_yaml(conditions_dict):
+        """Read conditions from a YAML dictionary and create a Conditions object."""
+        return Conditions(
+            temperature=Conditions.parse_temperature(conditions_dict.get("temperature")),
+            pressure=Conditions.parse_pressure(conditions_dict.get("pressure")),
+        )
 
 @dataclass
 class Specs:
@@ -82,7 +122,7 @@ class Specs:
             True if it is, False if not, and None if unspecified.
         wavelength_is_vacuum (bool, optional): Specifies whether the wavelength is given in vacuum.
             True if it is, False if not, and None if unspecified.
-        temperature (float, optional): The temperature of the material in degrees Celsius. None if unspecified.
+
         thermal_dispersion (ThermalDispersion, optional): An instance of the ThermalDispersion class representing thermal dispersion information.
             None if unspecified.
         nd (float, optional): The refractive index (n) of the material. None if unspecified.
@@ -137,18 +177,7 @@ class Specs:
         except (ValueError, AttributeError):
             return None
 
-    @staticmethod
-    def parse_temperature(temperature):
-        """Parse temperature string to Celsius."""
-        if isinstance(temperature, str):
-            if "K" in temperature:
-                return float(temperature.split()[0]) - 273.15
-            elif "C" in temperature:
-                return float(temperature.split()[0])
-            else:
-                warnings.warn("Temperature unit not recognized. Assuming Kelvin.")
-                return float(temperature.split()[0]) - 273.15
-        return Specs.parse_float(temperature)
+
 
     @staticmethod
     def parse_density(density):
@@ -199,9 +228,6 @@ class Specs:
             for tr in specs_dict.get("thermal_expansion", [])
         ]
 
-        # Temperature
-        temperature = Specs.parse_temperature(specs_dict.get("temperature"))
-
         # Density
         density = Specs.parse_density(specs_dict.get("density"))
 
@@ -220,7 +246,6 @@ class Specs:
         return Specs(
             n_is_absolute=specs_dict.get("n_is_absolute"),
             wavelength_is_vacuum=specs_dict.get("wavelength_is_vacuum"),
-            temperature=temperature,
             thermal_dispersion=thermal_dispersion_list[0] if thermal_dispersion_list else None,
             nd=specs_dict.get("nd"),
             Vd=specs_dict.get("Vd"),
@@ -278,6 +303,7 @@ class Material:
             It can be an instance of TabulatedIndexData or FormulaIndexData, or None if unspecified.
         specs (Specs | None, optional): An instance of the Specs dataclass representing material specifications.
             None if unspecified.
+        conditions: (Conditions | None, optional): An instance of the Conditions dataclass representing environmental conditions.
         yaml_data (YAMLLibraryData, optional): An instance of the YAMLLibraryData class representing YAML library data.
             None if unspecified.
         name (str, optional): The name of the material. Normally extracted from the YAML data, but can be overridden. Empty string if unspecified.
@@ -286,6 +312,7 @@ class Material:
     n: TabulatedIndexData | FormulaIndexData | None = field(default=None)
     k: TabulatedIndexData | FormulaIndexData | None = field(default=None)
     specs: Specs | None = field(default=None)
+    conditions: Conditions | None = field(default=None)
     yaml_data: YAMLLibraryData = field(default=None)
     name: str = field(default=yaml_data.name if yaml_data else "")
 
@@ -351,7 +378,7 @@ class Material:
             return n_abs + self.specs.thermal_dispersion.delta_n_abs(
                 n_abs,
                 wavelength,
-                temperature - self.specs.temperature + 273.15,
+                temperature - self.conditions.temperature + 273.15,
                 self.specs.thermal_dispersion.coefficients,
             )
         else:
@@ -362,12 +389,12 @@ class Material:
             )
             n_rel = self.get_n(rel_wavelength)
             n_abs = dispersion_formulas.relative_to_absolute(
-                n_rel, rel_wavelength, self.specs.temperature - 273.15, 0.10133
+                n_rel, rel_wavelength, self.conditions.temperature - 273.15, 0.10133
             )
             n_abs += self.specs.thermal_dispersion.delta_n_abs(
                 n_abs,
                 rel_wavelength,
-                temperature - self.specs.temperature + 273.15,
+                temperature - self.conditions.temperature + 273.15,
                 *self.specs.thermal_dispersion.coefficients,
             )
             return dispersion_formulas.absolute_to_relative(
@@ -589,7 +616,7 @@ class RefractiveIndexLibrary:
                 subfolder_files = [
                     file
                     for file in file_list
-                    if file.startswith(f"{file_list[0]}database/data-nk")
+                    if file.startswith(f"{file_list[0]}database/data")
                     and file.endswith(".yml")
                 ]
                 subfolder_files.append(f"{file_list[0]}database/catalog-nk.yml")
@@ -634,7 +661,7 @@ class RefractiveIndexLibrary:
                                 lib_book=book["BOOK"],
                                 lib_shelf=s["SHELF"],
                                 lib_data=page["data"],
-                                lib_path=self.path_to_library.parent.joinpath("data-nk", page["data"]),
+                                lib_path=self.path_to_library.parent.joinpath("data", page["data"]),
                             )
                         )
 
@@ -646,7 +673,7 @@ class RefractiveIndexLibrary:
         """
         for m in self.materials_yaml:
             # try to load material from yaml
-            mat = yaml_to_material(self.path_to_library.parent.joinpath("data-nk").joinpath(m.lib_data), m.lib_shelf,
+            mat = yaml_to_material(self.path_to_library.parent.joinpath("data").joinpath(m.lib_data), m.lib_shelf,
                                    m.lib_book, m.lib_page, m.name)
             if mat:
                 # add material to dict, use shelf, book and page as keys
@@ -819,7 +846,7 @@ class RefractiveIndexLibrary:
 
         Examples:
             >>> db = RefractiveIndexLibrary()
-            >>> bk7 = db.get_material("glass", "SCHOTT-BK", "N-BK7")
+            >>> bk7 = db.get_material("specs", "SCHOTT-optical", "N-BK7")
             >>> print(bk7.get_n(0.5875618))
             1.5168000345005885
         """
@@ -925,34 +952,39 @@ Returns:
             d = yaml.safe_load(yaml_content)  # Parse the YAML content
 
             data_blocks = d.get("DATA", [])
-            specs = Specs.read_specs_from_yaml(d.get("SPECS", None)) if "SPECS" in d else None
+            specs = Specs.read_specs_from_yaml(d.get("PROPERTIES", None)) if "PROPERTIES" in d else None
+            conditions = Conditions.read_conditions_from_yaml(d.get("CONDITIONS", None)) if "CONDITIONS" in d else None
 
             n_class, k_class = None, None
             if data_blocks:
-                n_data = data_blocks[0]
-                wl_n, wl_min_n, wl_max_n, n, k, coefficients, formula = fill_variables_from_data_dict(n_data)
-                if formula:
-                    n_class = FormulaIndexData(getattr(dispersion_formulas, f"formula_{formula}"), coefficients,
-                                               wl_min_n, wl_max_n)
-                elif n is not None:
-                    n_class = TabulatedIndexData(wl_n, n, 'interp1d', True)
-                    k_class = TabulatedIndexData(wl_n, k, 'interp1d', True) if k is not None else None
+                if isinstance(data_blocks, list):
+                    n_data = data_blocks[0]
+                    wl_n, wl_min_n, wl_max_n, n, k, coefficients, formula = fill_variables_from_data_dict(n_data)
+                    if formula:
+                        n_class = FormulaIndexData(getattr(dispersion_formulas, f"formula_{formula}"), coefficients,
+                                                   wl_min_n, wl_max_n)
+                    elif n is not None:
+                        n_class = TabulatedIndexData(wl_n, n, 'interp1d', True)
+                        k_class = TabulatedIndexData(wl_n, k, 'interp1d', True) if k is not None else None
 
-                k_data = next((item for item in data_blocks[1:] if item), {"type": ""})
-                wl_k, wl_min_k, wl_max_k, _, k, coefficients_k, formula_k = fill_variables_from_data_dict(k_data)
-                if formula_k:
-                    k_class = FormulaIndexData(getattr(dispersion_formulas, f"formula_{formula_k}"), coefficients_k,
-                                               wl_min_k, wl_max_k)
-                elif k is not None:
-                    k_class = TabulatedIndexData(wl_k, k, 'interp1d', True)
+                    k_data = next((item for item in data_blocks[1:] if item), {"type": ""})
+                    wl_k, wl_min_k, wl_max_k, _, k, coefficients_k, formula_k = fill_variables_from_data_dict(k_data)
+                    if formula_k:
+                        k_class = FormulaIndexData(getattr(dispersion_formulas, f"formula_{formula_k}"), coefficients_k,
+                                                   wl_min_k, wl_max_k)
+                    elif k is not None:
+                        k_class = TabulatedIndexData(wl_k, k, 'interp1d', True)
+                else:
+                    raise NotImplementedError("Dict data blocks not implemented yet.")
 
             return Material(
                 n_class,
                 k_class,
                 specs,
+                conditions,
                 YAMLLibraryData(lib_name, yaml_content, lib_shelf, lib_book, lib_page, filepath),
             )
-    except (ScannerError, ValueError, IndexError) as e:
+    except (ScannerError, ValueError, IndexError, NotImplementedError) as e:
         logger.warning(f"Could not read data in {filepath}: {e}")
         return None
 
@@ -960,7 +992,7 @@ Returns:
 def load_material(m, path_to_library):
     """Helper function to load a material."""
     mat = yaml_to_material(
-        path_to_library.parent.joinpath("data-nk").joinpath(m.lib_data),
+        path_to_library.parent.joinpath("data").joinpath(m.lib_data),
         m.lib_shelf, m.lib_book, m.lib_page, m.name
     )
     if mat:

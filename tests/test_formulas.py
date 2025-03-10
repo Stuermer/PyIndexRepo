@@ -24,14 +24,14 @@ def test_n_formula1(db):
 
 
 def test_n_formula2(db):
-    bk7 = db.get_material("glass", "SCHOTT-BK", "N-BK7")
+    bk7 = db.get_material("specs", "SCHOTT-optical", "N-BK7")
     assert bk7.get_n(0.5876) == pytest.approx(1.5168, 1e-5)
     assert bk7.get_k(0.5876) == pytest.approx(9.7525e-9)
     assert bk7.get_n(0.5460740) == pytest.approx(1.51872, 1e-5)
 
 
 def test_n_formula3(db):
-    bac4 = db.get_material("glass", "HOYA-BaC", "BAC4")
+    bac4 = db.get_material("specs", "HOYA-optical", "BAC4")
     # test single float
     assert bac4.get_n(0.5792) == pytest.approx(1.5692758037963, 1e-5)
     # test array
@@ -76,7 +76,7 @@ def test_n_at_temperature(db):
     n_bk7_ref = 1.51851533  # @20deg 1atm  @0.55014022mu
     n_bk7_30deg_2atm = 1.51814375  # @30deg 2 atm @0.55mu
 
-    bk7 = db.get_material("glass", "SCHOTT-BK", "N-BK7")
+    bk7 = db.get_material("specs", "SCHOTT-optical", "N-BK7")
     assert bk7.get_n_at_temperature(0.55014022, 20) == pytest.approx(n_bk7_ref)
     assert bk7.get_n_at_temperature(0.55, 30, P=0.202650) == pytest.approx(
         n_bk7_30deg_2atm
@@ -99,7 +99,7 @@ def test_silver(db):
     assert silver.get_k(0.5) == pytest.approx(2.8180, 1e-5)
 
 def test_different_datatypes(db):
-    bk7 = db.get_material("glass", "SCHOTT-BK", "N-BK7")
+    bk7 = db.get_material("specs", "SCHOTT-optical", "N-BK7")
     res = bk7.get_k(0.5)
     assert (
         isinstance(res, float)

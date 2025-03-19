@@ -64,7 +64,6 @@ jobs:
             exit 1
           else
             echo "The new version $NEW_VERSION is greater than the latest version $LATEST_VERSION on PyPI."
-          fi
 
   setup_and_build:
     needs: [details, check_pypi]
@@ -93,11 +92,17 @@ jobs:
         run: |
           poetry build
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+      - name: Upload source distribution
+        uses: actions/upload-artifact@v4
         with:
-          name: dist
-          path: dist/
+          name: src-dist-${{ needs.details.outputs.tag_name }}
+          path: dist/*.tar.gz
+
+      - name: Upload wheel distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel-dist-${{ needs.details.outputs.tag_name }}
+          path: dist/*.whl
 
   pypi_publish:
     name: Upload release to PyPI
@@ -108,10 +113,16 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
+      - name: Download source distribution
+        uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: src-dist-${{ needs.details.outputs.tag_name }}
+          path: dist/
+
+      - name: Download wheel distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: wheel-dist-${{ needs.details.outputs.tag_name }}
           path: dist/
 
       - name: Publish distribution to PyPI
@@ -129,10 +140,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
+      - name: Download source distribution
+        uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: src-dist-${{ needs.details.outputs.tag_name }}
+          path: dist/
+
+      - name: Download wheel distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: wheel-dist-${{ needs.details.outputs.tag_name }}
           path: dist/
 
       - name: Create GitHub Release

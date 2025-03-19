@@ -577,21 +577,21 @@ class RefractiveIndexLibrary:
     def _is_library_outdated(self) -> bool:
         """Checks if local library is outdated"""
         if self.path_to_library.parent.joinpath(".local_sha").exists():
-            # get local commit hash
+            # get local release tag
             with open(self.path_to_library.parent.joinpath(".local_sha"), "r") as file:
-                local_sha = file.readline()
-            # get current commit hash on GitHub
+                local_tag = file.readline().strip()
+            # get current release tag on GitHub
             try:
-                self.github_sha = requests.get(
-                    "https://api.github.com/repos/polyanskiy/refractiveindex.info-database/commits/master"
-                ).json()["sha"]
+                release_url = "https://api.github.com/repos/polyanskiy/refractiveindex.info-database/releases/latest"
+                response = requests.get(release_url)
+                self.github_sha = response.json()["tag_name"]
             except KeyError:
                 logger.warning(
-                    "Couldn't get SHA commit hash on GitHub. Database can not be updated."
+                    "Couldn't get the latest release tag on GitHub. Database cannot be updated."
                 )
                 self.github_sha = ""
                 return False
-            return not (self.github_sha == local_sha)
+            return not (self.github_sha == local_tag)
         else:
             logger.info("No local library exists.")
             return True
@@ -607,7 +607,10 @@ class RefractiveIndexLibrary:
         """
         if self._is_library_outdated() or self.force_upgrade:
             logger.info("New Library available... Downloading...")
-            zip_url = "https://api.github.com/repos/polyanskiy/refractiveindex.info-database/zipball"
+            release_url = "https://api.github.com/repos/polyanskiy/refractiveindex.info-database/releases/latest"
+            response = requests.get(release_url)
+            release_data = response.json()
+            zip_url = release_data["zipball_url"]
             response = requests.get(zip_url)
 
             with open(self.path_to_library.with_suffix(".zip"), "wb") as file:
@@ -675,7 +678,7 @@ class RefractiveIndexLibrary:
         for m in self.materials_yaml:
             # try to load material from yaml
             mat = yaml_to_material(self.path_to_library.parent.joinpath("data").joinpath(m.lib_data), m.lib_shelf,
-                                   m.lib_book, m.lib_page, m.name)
+                               m.lib_book, m.lib_page, m.name)
             if mat:
                 # add material to dict, use shelf, book and page as keys
                 self.materials_dict.setdefault(m.lib_shelf, {}).setdefault(m.lib_book, {})[m.lib_page] = mat
@@ -1000,8 +1003,8 @@ Returns:
                 conditions,
                 YAMLLibraryData(lib_name, yaml_content, lib_shelf, lib_book, lib_page, filepath),
             )
-    except (ScannerError, ValueError, IndexError, NotImplementedError) as e:
-        logger.warning(f"Could not read data in {filepath}: {e}")
+    except Exception as e:
+        logger.warning(f"Could not convert/load data in {filepath}: {e}")
         return None
 
 

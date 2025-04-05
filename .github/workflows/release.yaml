@@ -64,6 +64,7 @@ jobs:
             exit 1
           else
             echo "The new version $NEW_VERSION is greater than the latest version $LATEST_VERSION on PyPI."
+          fi
 
   setup_and_build:
     needs: [details, check_pypi]

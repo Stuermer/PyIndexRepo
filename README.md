@@ -11,10 +11,14 @@ This package gives access to the refractive index data from [RefractiveIndex.inf
 
 The focus of this package is to provide a convenient interface to the data, and be
 efficient in the calculation of (temperature-dependent) refractive indices.
+Internally, the YAML data are converted to Python objects, for convenient access. Numba is used to speed up recursive calculations.
+
 
 ## Usage
 
 #### Basics
+
+There are multiple ways to access the data. The most basic way is to use the `RefractiveIndexLibrary` class:
 
 ```python
 from pyindexrepo import RefractiveIndexLibrary
@@ -31,8 +35,19 @@ from a local file (almost instantaneously).
 
 Auto-upgrade of the library is supported, but switched off by default.
 
-There are two main classes that allow interacting with the data: the RefractiveIndexLibrary class
-and the Material class.
+The search function will return a list of materials, as there are multiple materials with the same name.
+You can also select the material by 'shelf', 'book' and 'page' as specified in the RefractiveIndex.info database.
+
+```python
+from pyindexrepo import RefractiveIndexLibrary
+
+db = RefractiveIndexLibrary(auto_upgrade=True)
+bk7 = db.get_material('specs', 'schott', 'N-BK7')
+print(bk7.get_n(0.5875618))
+```
+
+For further information how to interact with the data, please refer to the [documentation](https://stuermer.github.io/PyIndexRepo/).
+In particular, check the API of the `RefractiveIndexLibrary` class and the `Material` class.
 
 #### Temperature data
 

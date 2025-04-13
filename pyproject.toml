@@ -4,7 +4,9 @@ version = "0.1.14"
 description = "Python interface for data on refractiveindex.info"
 readme = "README.md"
 requires-python = ">=3.10"
-authors = ["stuermer <stuermer@lsw.uni-heidelberg.de>"]
+authors = [
+    { name = "stuermer", email = "stuermer@lsw.uni-heidelberg.de" }
+]
 dependencies = [
     "matplotlib>=3.10.1",
     "numba>=0.61.2",

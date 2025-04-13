@@ -87,6 +87,7 @@
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -148,6 +149,7 @@
     </tr>
   </tbody>
 </table>
+
 
 
 
@@ -226,6 +228,7 @@ class Conditions:
 
         <p>Parse pressure string to MPa.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">@staticmethod
@@ -255,6 +258,7 @@ def parse_pressure(pressure):
     <div class="doc doc-contents ">
 
         <p>Parse temperature string to Celsius.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
@@ -291,6 +295,7 @@ def parse_temperature(temperature):
     <div class="doc doc-contents ">
 
         <p>Read conditions from a YAML dictionary and create a Conditions object.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
@@ -387,6 +392,7 @@ def read_conditions_from_yaml(conditions_dict):
 
 
 
+
               <details class="quote">
                 <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
@@ -473,7 +479,17 @@ class FormulaIndexData:
         <ul class="first simple">
             <li>
               <b><code>n</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="TabulatedIndexData (pyindexrepo.main.TabulatedIndexData)" href="#pyindexrepo.main.TabulatedIndexData">TabulatedIndexData</a> | <a class="autorefs autorefs-internal" title="FormulaIndexData (pyindexrepo.main.FormulaIndexData)" href="#pyindexrepo.main.FormulaIndexData">FormulaIndexData</a> | None</code>)
+                  (<code><a class="autorefs autorefs-internal" title="TabulatedIndexData
+
+
+  
+      dataclass
+   (pyindexrepo.main.TabulatedIndexData)" href="#pyindexrepo.main.TabulatedIndexData">TabulatedIndexData</a> | <a class="autorefs autorefs-internal" title="FormulaIndexData
+
+
+  
+      dataclass
+   (pyindexrepo.main.FormulaIndexData)" href="#pyindexrepo.main.FormulaIndexData">FormulaIndexData</a> | None</code>)
               –
               <div class="doc-md-description">
                 <p>The refractive index (n) data for the material.
@@ -482,7 +498,17 @@ It can be an instance of TabulatedIndexData or FormulaIndexData, or None if unsp
             </li>
             <li>
               <b><code>k</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="TabulatedIndexData (pyindexrepo.main.TabulatedIndexData)" href="#pyindexrepo.main.TabulatedIndexData">TabulatedIndexData</a> | <a class="autorefs autorefs-internal" title="FormulaIndexData (pyindexrepo.main.FormulaIndexData)" href="#pyindexrepo.main.FormulaIndexData">FormulaIndexData</a> | None</code>)
+                  (<code><a class="autorefs autorefs-internal" title="TabulatedIndexData
+
+
+  
+      dataclass
+   (pyindexrepo.main.TabulatedIndexData)" href="#pyindexrepo.main.TabulatedIndexData">TabulatedIndexData</a> | <a class="autorefs autorefs-internal" title="FormulaIndexData
+
+
+  
+      dataclass
+   (pyindexrepo.main.FormulaIndexData)" href="#pyindexrepo.main.FormulaIndexData">FormulaIndexData</a> | None</code>)
               –
               <div class="doc-md-description">
                 <p>The extinction coefficient (k) data for the material.
@@ -491,7 +517,12 @@ It can be an instance of TabulatedIndexData or FormulaIndexData, or None if unsp
             </li>
             <li>
               <b><code>specs</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="Specs (pyindexrepo.main.Specs)" href="#pyindexrepo.main.Specs">Specs</a> | None</code>)
+                  (<code><a class="autorefs autorefs-internal" title="Specs
+
+
+  
+      dataclass
+   (pyindexrepo.main.Specs)" href="#pyindexrepo.main.Specs">Specs</a> | None</code>)
               –
               <div class="doc-md-description">
                 <p>An instance of the Specs dataclass representing material specifications.
@@ -500,7 +531,12 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>conditions</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="Conditions (pyindexrepo.main.Conditions)" href="#pyindexrepo.main.Conditions">Conditions</a> | None</code>)
+                  (<code><a class="autorefs autorefs-internal" title="Conditions
+
+
+  
+      dataclass
+   (pyindexrepo.main.Conditions)" href="#pyindexrepo.main.Conditions">Conditions</a> | None</code>)
               –
               <div class="doc-md-description">
                 <p>(Conditions | None, optional): An instance of the Conditions dataclass representing environmental conditions.</p>
@@ -528,6 +564,7 @@ None if unspecified.</p>
     </tr>
   </tbody>
 </table>
+
 
 
 
@@ -724,6 +761,7 @@ class Material:
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def get_k(self, wavelength: float | np.ndarray) -&gt; float | np.ndarray:
@@ -804,6 +842,7 @@ class Material:
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def get_n(self, wavelength: float | np.ndarray) -&gt; float | np.ndarray:
@@ -902,6 +941,7 @@ class Material:
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def get_n_at_temperature(
@@ -1014,6 +1054,7 @@ class Material:
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def get_nk(self, wavelength: float | np.ndarray) -&gt; tuple[float | np.ndarray, float | np.ndarray]:
@@ -1107,7 +1148,12 @@ Default is False.</p>
             </li>
             <li>
               <b><code>materials_dict</code></b>
-                  (<code>(<span title="Dict">Dict</span>[<span title="str">str</span>, <span title="Dict">Dict</span>[<span title="str">str</span>, <span title="Dict">Dict</span>[<span title="str">str</span>, <a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a>]]], <span title="read">read</span> - <span title="only">only</span>)</code>)
+                  (<code>(<span title="Dict">Dict</span>[<span title="str">str</span>, <span title="Dict">Dict</span>[<span title="str">str</span>, <span title="Dict">Dict</span>[<span title="str">str</span>, <a class="autorefs autorefs-internal" title="Material
+
+
+  
+      dataclass
+   (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a>]]], <span title="read">read</span> - <span title="only">only</span>)</code>)
               –
               <div class="doc-md-description">
                 <p>A dictionary of materials organized by catalog, category, and name.</p>
@@ -1115,7 +1161,12 @@ Default is False.</p>
             </li>
             <li>
               <b><code>materials_list</code></b>
-                  (<code>(<span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a>], <span title="read">read</span> - <span title="only">only</span>)</code>)
+                  (<code>(<span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="Material
+
+
+  
+      dataclass
+   (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a>], <span title="read">read</span> - <span title="only">only</span>)</code>)
               –
               <div class="doc-md-description">
                 <p>A list of all materials contained in the library.</p>
@@ -1134,6 +1185,7 @@ Default is False.</p>
     </tr>
   </tbody>
 </table>
+
 
 
 
@@ -1592,7 +1644,12 @@ class RefractiveIndexLibrary:
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a></code>
+                  <code><a class="autorefs autorefs-internal" title="Material
+
+
+  
+      dataclass
+   (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a></code>
               –
               <div class="doc-md-description">
                 <p>Material object</p>
@@ -1609,6 +1666,7 @@ class RefractiveIndexLibrary:
 &gt;&gt;&gt; bk7 = db.get_material("specs", "SCHOTT-optical", "N-BK7")
 &gt;&gt;&gt; print(bk7.get_n(0.5875618))
 1.5168000345005885</code></pre>
+
 
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
@@ -1713,7 +1771,12 @@ class RefractiveIndexLibrary:
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a></code>
+                  <code><a class="autorefs autorefs-internal" title="Material
+
+
+  
+      dataclass
+   (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a></code>
               –
               <div class="doc-md-description">
                 <p>Material object</p>
@@ -1724,6 +1787,7 @@ class RefractiveIndexLibrary:
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def get_material_by_path(self, yaml_path: str) -&gt; Material:
@@ -1839,7 +1903,12 @@ S-FPL51 1.498303051383454</code></pre>
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a>]</code>
+                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="Material
+
+
+  
+      dataclass
+   (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a>]</code>
               –
               <div class="doc-md-description">
                 <p>sorted list of materials matching search criteria</p>
@@ -1850,6 +1919,7 @@ S-FPL51 1.498303051383454</code></pre>
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def search_material_by_n(
@@ -1975,7 +2045,17 @@ or None if it doesn't find a match.</p>
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a> | <span title="list">list</span>[<a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a>] | None</code>
+                  <code><a class="autorefs autorefs-internal" title="Material
+
+
+  
+      dataclass
+   (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a> | <span title="list">list</span>[<a class="autorefs autorefs-internal" title="Material
+
+
+  
+      dataclass
+   (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a>] | None</code>
               –
               <div class="doc-md-description">
                 <p>Material or list of Materials matching the Name</p>
@@ -1992,6 +2072,7 @@ or None if it doesn't find a match.</p>
 &gt;&gt;&gt; bk7 = db.search_material_by_page_name('N-BK7')[0]  # returns a list of different BK7 glasses
 &gt;&gt;&gt; print(bk7.get_n(0.5875618))
 1.5168000345005885</code></pre>
+
 
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
@@ -2107,7 +2188,12 @@ True if it is, False if not, and None if unspecified.</p>
             </li>
             <li>
               <b><code>thermal_dispersion</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="ThermalDispersion (pyindexrepo.main.ThermalDispersion)" href="#pyindexrepo.main.ThermalDispersion">ThermalDispersion</a></code>)
+                  (<code><a class="autorefs autorefs-internal" title="ThermalDispersion
+
+
+  
+      dataclass
+   (pyindexrepo.main.ThermalDispersion)" href="#pyindexrepo.main.ThermalDispersion">ThermalDispersion</a></code>)
               –
               <div class="doc-md-description">
                 <p>An instance of the ThermalDispersion class representing thermal dispersion information.
@@ -2156,7 +2242,12 @@ None if unspecified.</p>
             </li>
             <li>
               <b><code>thermal_expansion</code></b>
-                  (<code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="ThermalExpansion (pyindexrepo.main.ThermalExpansion)" href="#pyindexrepo.main.ThermalExpansion">ThermalExpansion</a>]</code>)
+                  (<code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="ThermalExpansion
+
+
+  
+      dataclass
+   (pyindexrepo.main.ThermalExpansion)" href="#pyindexrepo.main.ThermalExpansion">ThermalExpansion</a>]</code>)
               –
               <div class="doc-md-description">
                 <p>A list of instances of the ThermalExpansion class representing thermal expansion properties.
@@ -2208,6 +2299,7 @@ None if unspecified.</p>
     </tr>
   </tbody>
 </table>
+
 
 
 
@@ -2419,6 +2511,7 @@ class Specs:
 
         <p>Returns the coefficient of thermal expansion for a given temperature.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def get_coefficient_of_thermal_expansion(self, temperature: float) -&gt; float:
@@ -2472,6 +2565,7 @@ class Specs:
 
         <p>Parse coefficients string into a numpy array.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">@staticmethod
@@ -2505,6 +2599,7 @@ def parse_coefficients(coefficients):
 
         <p>Parse density string to float.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">@staticmethod
@@ -2534,6 +2629,7 @@ def parse_density(density):
     <div class="doc doc-contents ">
 
         <p>Convert value to float if possible, otherwise return default.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
@@ -2570,6 +2666,7 @@ def parse_float(value, default=None):
 
         <p>Parse a TemperatureRange object from dictionary.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">@staticmethod
@@ -2603,6 +2700,7 @@ def parse_temperature_range(tr_dict):
     <div class="doc doc-contents ">
 
         <p>Parse a ThermalDispersion object from dictionary.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
@@ -2640,6 +2738,7 @@ def parse_thermal_dispersion(td_dict):
     <div class="doc doc-contents ">
 
         <p>Read specs from a YAML dictionary and create a Specs object.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
@@ -2786,6 +2885,7 @@ True to raise an error, False to suppress errors. Default is True.</p>
 
 
 
+
               <details class="quote">
                 <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
@@ -2919,6 +3019,7 @@ For speed reasons, the function delta_n_abs is outsourced to the dispersion_form
 
 
 
+
               <details class="quote">
                 <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
@@ -3004,6 +3105,7 @@ Attributes:
 
 
 
+
               <details class="quote">
                 <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
@@ -3072,7 +3174,12 @@ class ThermalExpansion:
         <ul class="first simple">
             <li>
               <b><code>n_data</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="YAMLRefractiveIndexData (pyindexrepo.main.YAMLRefractiveIndexData)" href="#pyindexrepo.main.YAMLRefractiveIndexData">YAMLRefractiveIndexData</a></code>)
+                  (<code><a class="autorefs autorefs-internal" title="YAMLRefractiveIndexData
+
+
+  
+      dataclass
+   (pyindexrepo.main.YAMLRefractiveIndexData)" href="#pyindexrepo.main.YAMLRefractiveIndexData">YAMLRefractiveIndexData</a></code>)
               –
               <div class="doc-md-description">
                 <p>An instance of YAMLRefractiveIndexData containing refractive index (n) data.</p>
@@ -3080,7 +3187,12 @@ class ThermalExpansion:
             </li>
             <li>
               <b><code>k_data</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="YAMLRefractiveIndexData (pyindexrepo.main.YAMLRefractiveIndexData)" href="#pyindexrepo.main.YAMLRefractiveIndexData">YAMLRefractiveIndexData</a></code>)
+                  (<code><a class="autorefs autorefs-internal" title="YAMLRefractiveIndexData
+
+
+  
+      dataclass
+   (pyindexrepo.main.YAMLRefractiveIndexData)" href="#pyindexrepo.main.YAMLRefractiveIndexData">YAMLRefractiveIndexData</a></code>)
               –
               <div class="doc-md-description">
                 <p>An instance of YAMLRefractiveIndexData containing extinction coefficient (k) data.</p>
@@ -3109,6 +3221,7 @@ Default is an empty string, indicating no references.</p>
     </tr>
   </tbody>
 </table>
+
 
 
 
@@ -3232,6 +3345,7 @@ Default is an empty string, indicating unspecified data.</p>
 
 
 
+
               <details class="quote">
                 <summary>Source code in <code>pyindexrepo/main.py</code></summary>
                 <pre class="highlight"><code class="language-python">@dataclass
@@ -3288,6 +3402,7 @@ class YAMLRefractiveIndexData:
     <div class="doc doc-contents ">
 
         <p>Helper function to load a material.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
@@ -3387,7 +3502,12 @@ class YAMLRefractiveIndexData:
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><a class="autorefs autorefs-internal" title="Material (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a> | None</code>
+                  <code><a class="autorefs autorefs-internal" title="Material
+
+
+  
+      dataclass
+   (pyindexrepo.main.Material)" href="#pyindexrepo.main.Material">Material</a> | None</code>
               –
               <div class="doc-md-description">
                 <p>Material object</p>
@@ -3398,6 +3518,7 @@ class YAMLRefractiveIndexData:
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/main.py</code></summary>
               <pre class="highlight"><code class="language-python">def yaml_to_material(filepath: str | Path, lib_shelf: str, lib_book: str, lib_page: str,
@@ -3518,6 +3639,7 @@ Returns:
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -3594,6 +3716,7 @@ Returns:
     </tr>
   </tbody>
 </table>        <p>Returns:</p>
+
 
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
@@ -3726,6 +3849,7 @@ Formula (3) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
     </tr>
   </tbody>
 </table>        <p>Returns:</p>
+
 
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
@@ -3879,6 +4003,7 @@ Formula (2) of <a href="https://www.schott.com/en-gb/products/optical-glass-p100
   </tbody>
 </table>        <p>Returns:</p>
 
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(cache=True)
@@ -4004,6 +4129,7 @@ def dn_absolute_temperature(
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(cache=True)
@@ -4074,6 +4200,7 @@ def dn_dt_air(wl: float | np.ndarray, T: float, P: float):
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -4154,6 +4281,7 @@ def formula_1(wavelength, coefficients):
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -4232,6 +4360,7 @@ def formula_2(wavelength, coefficients):
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -4312,6 +4441,7 @@ def formula_3(wavelength, coefficients):
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -4401,6 +4531,7 @@ n={C}_{1}+{C}_{2}{\lambda }^{{C}_{3}}+{C}_{4}{\lambda }^{{C}_{5}}+{C}_{6}{\lambd
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -4479,6 +4610,7 @@ n-1={C}_{1}+\frac{{C}_{2}}{{C}_{3}-{\lambda }^{-2}}+\frac{{C}_{4}}{{C}_{5}-{\lam
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -4558,6 +4690,7 @@ n={C}_{1}+\frac{{C}_{2}}{{\lambda }^{2}-0.028}+{C}_{3}{\left(\frac{1}{{\lambda }
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -4607,6 +4740,7 @@ def formula_7(wavelength, coefficients):
 <div class="arithmatex">\[
 \frac{{n}^{2}-1}{{n}^{2}+2}={C}_{1}+\frac{{C}_{2}{\lambda }^{2}}{{\lambda }^{2}-{C}_{3}}+{C}_{4}{\lambda }^{2}
 \]</div>
+
 
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
@@ -4697,6 +4831,7 @@ def formula_8(wavelength, coefficients):
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(
@@ -4793,6 +4928,7 @@ def formula_9(wavelength, coefficients):
     </tr>
   </tbody>
 </table>        <p>Returns:</p>
+
 
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
@@ -4900,6 +5036,7 @@ def n_absolute_with_given_dndt(
     </tr>
   </tbody>
 </table>
+
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
               <pre class="highlight"><code class="language-python">@njit(cache=True)
@@ -4994,6 +5131,7 @@ def n_air(wl: float | np.ndarray, T: float = 20.0, P: float = 0.10133):
     </tr>
   </tbody>
 </table>        <p>Returns:</p>
+
 
             <details class="quote">
               <summary>Source code in <code>pyindexrepo/dispersion_formulas.py</code></summary>
